@@ -1,0 +1,40 @@
+[CmdletBinding()]
+param(
+    [switch]$ArchiveExisting,
+    # The alternate name is only for isolated integration tests.
+    [ValidatePattern('^(progress|progress_test_[0-9]+)$')]
+    [string]$Database = 'progress'
+)
+
+$ErrorActionPreference = 'Stop'
+$projectDirectory = Split-Path -Parent $PSScriptRoot
+function Invoke-DatabaseSql([string]$Target, [string]$Sql) {
+    $result = & docker compose --project-directory $projectDirectory exec -T postgres psql -U progress -d $Target -v ON_ERROR_STOP=1 -tAc $Sql
+    if ($LASTEXITCODE -ne 0) { throw "PostgreSQL no pudo completar la operación. No se elimina ninguna base. Revisa el error anterior." }
+    return ($result -join "`n").Trim()
+}
+
+$exists = Invoke-DatabaseSql 'postgres' "SELECT count(*) FROM pg_database WHERE datname = '$Database'"
+if ($exists -eq '1') {
+    $tables = Invoke-DatabaseSql $Database "SELECT count(*) FROM information_schema.tables WHERE table_schema NOT IN ('pg_catalog','information_schema')"
+    if ($tables -eq '0') {
+        Write-Output "$Database ya está vacía. Inicia la API con Database__SeedDemo=false."
+        return
+    }
+    if (-not $ArchiveExisting) {
+        throw "$Database ya tiene un esquema o datos. Se conserva intacta. Detén la API, respalda la base y ejecuta con -ArchiveExisting solo si deseas ARCHIVAR toda la base actual y comenzar otra vacía."
+    }
+    $sessions = Invoke-DatabaseSql 'postgres' "SELECT count(*) FROM pg_stat_activity WHERE datname = '$Database'"
+    if ($sessions -ne '0') { throw "Hay conexiones abiertas a $Database. Detén la API y cierra tus clientes SQL. No se desconectan usuarios automáticamente." }
+    $archive = "${Database}_legacy_$(Get-Date -Format 'yyyyMMdd_HHmmss')"
+    $archiveExists = Invoke-DatabaseSql 'postgres' "SELECT count(*) FROM pg_database WHERE datname = '$archive'"
+    if ($archiveExists -ne '0') { throw "El archivo $archive ya existe. No se sobrescribe. Reintenta en otro segundo." }
+    # Renaming preserves the complete database, including data, migrations and
+    # seed history. PostgreSQL refuses the rename if a new connection races us.
+    Invoke-DatabaseSql 'postgres' "ALTER DATABASE $Database RENAME TO $archive" | Out-Null
+    Write-Output "Base anterior conservada íntegramente: $archive"
+}
+
+Invoke-DatabaseSql 'postgres' "CREATE DATABASE $Database OWNER progress" | Out-Null
+Write-Output "Base real vacía creada: $Database. No se ejecutó seed."
+Write-Output 'Inicia la API con Database__SeedDemo=false; aplicará las migraciones en Development.'

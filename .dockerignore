@@ -1,0 +1,16 @@
+**/node_modules
+**/bin
+**/obj
+**/dist
+.git
+.vs
+artifacts
+tests
+docs
+scripts
+**/.env*
+**/appsettings.*.local.json
+**/*.dump
+**/*.pfx
+**/*.pem
+**/config.local.ps1

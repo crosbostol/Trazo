@@ -1,0 +1,35 @@
+services:
+  postgres:
+    profiles: [legacy-postgresql]
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: progress
+      POSTGRES_USER: progress
+      POSTGRES_PASSWORD: local_progress_only
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - progress_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U progress -d progress"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_PID: Developer
+      MSSQL_SA_PASSWORD: "${TRAZO_SQL_PASSWORD:?Set TRAZO_SQL_PASSWORD before starting SQL Server}"
+    ports:
+      - "127.0.0.1:1433:1433"
+    volumes:
+      - trazo_sql_data:/var/opt/mssql
+    healthcheck:
+      test: ["CMD-SHELL", "SQLCMDPASSWORD=$$MSSQL_SA_PASSWORD /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -C -b -Q 'SELECT 1' > /dev/null"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+volumes:
+  trazo_sql_data:
+  progress_data:

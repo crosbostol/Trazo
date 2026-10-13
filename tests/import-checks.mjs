@@ -1,0 +1,77 @@
+import assert from 'node:assert/strict'
+import { field, formatActivityJson, updateSubjective, validateActivityJson } from '../frontend/src/importActivity.ts'
+
+export async function checkImport(request, today) {
+  const source = `{"date":"${today}","type":"Running","durationSeconds":1800,"mood":null,"energy":null,"rpe":null,"subjectiveNotes":null,"notes":null,"running":{"distanceKm":5,"averagePaceSecondsPerKm":360,"averageHeartRate":null},"rawPayload":{"id":9007199254740993,"big":1e400,"small":1.234567890123456789,"quoted":"{\\\"mood\\\":2}","nested":[{},[],null,true,false],"mood":1}}`
+  const formatted = formatActivityJson(source)
+  assert.equal(formatted.replace(/\s+(?=(?:[^"]*"[^"]*")*[^"]*$)/g, ''), source)
+  assert.match(formatted, /9007199254740993/)
+  assert.match(formatted, /1e400/)
+  assert.match(formatted, /1\.234567890123456789/)
+  assert.deepEqual(JSON.parse(formatted), JSON.parse(source))
+  assert.equal(field(validateActivityJson(formatted), 'type'), 'Running')
+  let body = updateSubjective(formatted, 'mood', 4)
+  body = updateSubjective(body, 'energy', 3)
+  body = updateSubjective(body, 'rpe', 6)
+  body = updateSubjective(body, 'subjectiveNotes', 'Me sentí bien.\nComillas " y llaves { } · ñ')
+  assert.deepEqual(JSON.parse(body).rawPayload, JSON.parse(source).rawPayload)
+  assert.equal(JSON.parse(body).mood, 4)
+  assert.equal(JSON.parse(body).rawPayload.mood, 1)
+  assert.match(body, /9007199254740993/)
+  assert.match(body, /1e400/)
+  assert.match(body, /1\.234567890123456789/)
+  const mixed = `{"DATE":"${today}","TYPE":"running","DURATIONSECONDS":60,"RUNNING":{},"mood":1,"MOOD":2}`
+  const edited = updateSubjective(mixed, 'mood', 5)
+  assert.equal(JSON.parse(edited).mood, 5)
+  assert.equal(JSON.parse(edited).MOOD, 5)
+  assert.equal(JSON.parse(updateSubjective(mixed.replace('"mood":1', '"mood":{"nested":[1,2]}'), 'mood', 3)).mood, 3)
+  assert.equal(field(validateActivityJson(updateSubjective(mixed, 'subjectiveNotes', 'nueva')), 'subjectiveNotes'), 'nueva')
+  assert.throws(() => updateSubjective(source, 'rawPayload', null), /editable/)
+  for (const invalid of ['{broken', 'null', '[]', '1', JSON.stringify({date:today,type:'Running',durationSeconds:-1,running:{}}),
+    JSON.stringify({date:today,type:'Running',durationSeconds:1}), JSON.stringify({date:today,type:'Strength',durationSeconds:1,exercises:[]}),
+    JSON.stringify({date:'2026-02-30',type:'Walking',durationSeconds:1}), JSON.stringify({date:today,type:'Walking',durationSeconds:1,mood:6})])
+    assert.throws(() => validateActivityJson(invalid))
+  assert.throws(() => formatActivityJson('{broken'))
+
+  const imported = await request('/api/activities', 'POST', body, 201)
+  const read = await request(`/api/activities/${imported.id}`)
+  assert.equal(read.mood, 4)
+  assert.equal(read.energy, 3)
+  assert.equal(read.rpe, 6)
+  assert.equal(read.subjectiveNotes, JSON.parse(body).subjectiveNotes)
+  assert.equal(read.running.averageHeartRate, null)
+  assert.equal(read.notes, null)
+  assert.match(read.rawPayloadJson, /9007199254740993/)
+  assert.match(read.rawPayloadJson, /1e400/)
+  assert.match(read.rawPayloadJson, /1\.234567890123456789/)
+  assert.ok((await request('/api/activities')).some(a => a.id === imported.id))
+  const dashboard = await request('/api/dashboard')
+  assert.equal(dashboard.distanceThisWeekKm, 5)
+  assert.equal(dashboard.latestActivity.id, imported.id)
+  assert.ok(dashboard.weeklyDistance.some(w => w.distanceKm === 5))
+  assert.ok(dashboard.paceHistory.some(p => p.paceSecondsPerKm === 360))
+  await request(`/api/activities/${imported.id}`, 'DELETE', undefined, 204)
+  await request(`/api/activities/${imported.id}`, 'GET', undefined, 404)
+
+  const strengthJson = JSON.stringify({date:today,type:'Strength',durationSeconds:60,rawPayload:null,mood:null,energy:null,rpe:null,
+    exercises:[{exerciseName:'Plancha',order:1,sets:[{setNumber:1,reps:0,durationSeconds:30,weightKg:null,side:null}]}]})
+  validateActivityJson(strengthJson)
+  const strength = await request('/api/activities', 'POST', formatActivityJson(strengthJson), 201)
+  assert.equal((await request(`/api/activities/${strength.id}`)).exercises[0].sets[0].durationSeconds, 30)
+  await request(`/api/activities/${strength.id}`, 'DELETE', undefined, 204)
+  await request('/api/activities', 'POST', '{invalid', 400)
+  // Structure checks are local; the same POST enforces all domain/JSON rules.
+  const badDomain = source.replace('"distanceKm":5', '"distanceKm":-5')
+  validateActivityJson(badDomain)
+  const problem = await request('/api/activities', 'POST', badDomain, 400)
+  assert.ok(Object.keys(problem.errors).some(k => /distance/i.test(k)))
+  // Provider-specific JSONB numeric/NUL limits no longer apply to opaque JSON text.
+  for (const payload of ['1e200000', '9007199254740993', '1e400', '"\\u0000"', 'true', 'null', '[]']) {
+    const fixture = await request('/api/activities', 'POST', JSON.stringify({date:today,type:'Walking',durationSeconds:60,walking:{}}).slice(0,-1) + ',"rawPayload":' + payload + '}', 201)
+    const reread = await request(`/api/activities/${fixture.id}`)
+    if (payload !== 'null') assert.equal(reread.rawPayloadJson, payload)
+    await request(`/api/activities/${fixture.id}`, 'DELETE', undefined, 204)
+  }
+  assert.equal((await request('/api/activities')).length, 0)
+  console.log('PASS import: local checks, formatting, subjective edits, exact JSON numbers, Running/Strength create/read/list/charts/delete and rejected invalid data')
+}

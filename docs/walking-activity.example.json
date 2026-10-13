@@ -1,0 +1,26 @@
+{
+  "date": "2026-09-26",
+  "type": "Walking",
+  "durationSeconds": 911,
+  "walking": {
+    "distanceKm": 1.26,
+    "totalDurationSeconds": 911,
+    "movingDurationSeconds": 901,
+    "averagePaceSecondsPerKm": 724,
+    "averageHeartRate": 148,
+    "maxHeartRate": 161,
+    "recoveryHeartRate": 32,
+    "averageCadence": 104,
+    "maxCadence": 115,
+    "steps": 1616,
+    "aerobicTrainingEffect": 2.5,
+    "trainingLoad": 41,
+    "activeCalories": 163,
+    "totalCalories": 188,
+    "estimatedFluidLossMl": 221
+  },
+  "rawPayload": {
+    "source": "example",
+    "additionalData": "Aquí puede conservarse el registro original completo"
+  }
+}
