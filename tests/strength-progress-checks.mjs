@@ -28,7 +28,7 @@ export async function strengthFixtures(request) {
   }
 }
 
-export async function checkStrengthProgress(request,database,baseUrl) {
+export async function checkStrengthProgress(request,database,baseUrl,{sqlChecks=true}={}) {
   for (const route of ['/api/strength/exercises',progressPath('Bench Press')])
     assert.equal((await fetch(baseUrl+route)).status,401,'Strength analytics require authentication')
   assert.deepEqual(await request('/api/strength/exercises'),[])
@@ -37,19 +37,19 @@ export async function checkStrengthProgress(request,database,baseUrl) {
   await request(progressPath('missing'),'GET',undefined,404)
   // Simulate a legacy activity with no exercises, without changing API integrity rules.
   const legacy = '11111111-1111-1111-1111-111111111111'
-  sql(database,`INSERT INTO Activities (Id,Date,Type,DurationSeconds,CreatedAt,UpdatedAt) VALUES ('${legacy}','2020-01-01','Strength',60,SYSUTCDATETIME(),SYSUTCDATETIME())`)
-  const ids = [legacy]
+  if (sqlChecks) sql(database,`INSERT INTO Activities (Id,Date,Type,DurationSeconds,CreatedAt,UpdatedAt) VALUES ('${legacy}','2020-01-01','Strength',60,SYSUTCDATETIME(),SYSUTCDATETIME())`)
+  const ids = sqlChecks ? [legacy] : []
   try {
     assert.deepEqual(await request('/api/strength/exercises'),[])
     const fixtures = await strengthFixtures(request); ids.push(...fixtures)
-    sql(database,`UPDATE StrengthExercise SET ExerciseName=N' bench press ' WHERE ActivityId='${fixtures[0]}' AND [Order]=1`)
+    if (sqlChecks) sql(database,`UPDATE StrengthExercise SET ExerciseName=N' bench press ' WHERE ActivityId='${fixtures[0]}' AND [Order]=1`)
     const choices = await request('/api/strength/exercises')
     assert.equal(choices.length,5)
     assert.equal(choices.filter(x=>x.name.toLowerCase()==='bench press').length,1)
     assert.equal(choices[0].lastDate,'2020-01-02')
     const p = await request(progressPath('  bEnCh PrEsS  '))
     assert.equal(p.sessions.length,3)
-    assert.equal(p.sessions[0].sets[0].exerciseName,' bench press ')
+    assert.equal(p.sessions[0].sets[0].exerciseName,sqlChecks?' bench press ':'Bench Press')
     assert.equal(p.sessions[0].setCount,3,'Repeated exercise entries consolidate per Activity')
     assert.equal(p.sessions[0].knownWeightReps,18)
     assert.equal(p.sessions[0].volumeKg,440)

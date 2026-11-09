@@ -2,7 +2,7 @@ name: Build Trazo containers
 on:
   push:
     branches: [codex/cosmos-spike]
-    paths: ['backend/**', 'frontend/**', 'Dockerfile', '.github/workflows/container.yml']
+    paths: ['backend/**', 'frontend/**', 'tests/**', 'Dockerfile', '.github/workflows/container.yml']
   workflow_dispatch:
 permissions:
   contents: read
@@ -11,7 +11,29 @@ concurrency:
   group: trazo-container-${{ github.ref }}
   cancel-in-progress: false
 jobs:
+  verify:
+    runs-on: ubuntu-latest
+    env:
+      TRAZO_SQL_PASSWORD: LocalOnly_Trazo_SQL_2026!
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: dotnet build backend
+      - run: dotnet run --project tests/CosmosChecks
+      - run: npm --prefix frontend ci
+      - run: npm --prefix frontend run build
+      - run: npm --prefix frontend run lint
+      - run: docker compose up -d --wait sqlserver
+      - run: node tests/api-smoke.mjs
+      - if: always()
+        run: docker compose down
   image:
+    needs: verify
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false

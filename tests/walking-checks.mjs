@@ -8,7 +8,7 @@ export const walkingExample = {
   recoveryHeartRate:32, averageCadence:104, maxCadence:115, steps:1616,
   aerobicTrainingEffect:2.5, trainingLoad:41, activeCalories:163, totalCalories:188, estimatedFluidLossMl:221,
 }
-export async function checkWalking(request, today, database) {
+export async function checkWalking(request, today, database, {sqlChecks = true} = {}) {
   const base = {date:today,type:'Walking',durationSeconds:911,walking:{}}
   const before = await request('/api/dashboard')
   const beforeRange = await request('/api/dashboard?from='+today+'&to='+today)
@@ -75,16 +75,16 @@ export async function checkWalking(request, today, database) {
     await request('/api/activities','POST',invalid,400)
   }
   // Database constraints protect writes that bypass the API.
-  for(const assignment of ['[DistanceKm]=-1','[Steps]=-1','[DistanceKm]=\'NaN\'','[AverageHeartRate]=200',
+  if (sqlChecks) for(const assignment of ['[DistanceKm]=-1','[Steps]=-1','[DistanceKm]=\'NaN\'','[AverageHeartRate]=200',
     '[AverageCadence]=120','[ActiveCalories]=200','[MinElevationMeters]=50','[MovingDurationSeconds]=1000','[AerobicTrainingEffect]=6']) {
     assert.throws(()=>sql(database,'UPDATE WalkingDetails SET '+assignment+" WHERE ActivityId='"+complete.id+"'"))
   }
   for(const fixture of [minimal,complete,nulls,zero]) {
-    assert.equal(sql(database,"SELECT COUNT(*) FROM WalkingDetails WHERE ActivityId='"+fixture.id+"'"),'1')
+    if (sqlChecks) assert.equal(sql(database,"SELECT COUNT(*) FROM WalkingDetails WHERE ActivityId='"+fixture.id+"'"),'1')
     await request('/api/activities/'+fixture.id,'DELETE',undefined,204)
     await request('/api/activities/'+fixture.id,'GET',undefined,404)
-    assert.equal(sql(database,"SELECT COUNT(*) FROM WalkingDetails WHERE ActivityId='"+fixture.id+"'"),'0')
+    if (sqlChecks) assert.equal(sql(database,"SELECT COUNT(*) FROM WalkingDetails WHERE ActivityId='"+fixture.id+"'"),'0')
   }
   assert.equal((await request('/api/dashboard')).totalActivities,before.totalActivities)
-  console.log('PASS Walking: minimal/complete/nulls, source JSON precision, domain and SQL constraints, list/detail, sessions only, running isolation and cascade')
+  console.log('PASS Walking: minimal/complete/nulls, source JSON precision, domain'+(sqlChecks?' and SQL constraints':'')+', list/detail, sessions only, running isolation and deletion')
 }

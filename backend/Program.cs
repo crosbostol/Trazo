@@ -10,6 +10,8 @@ using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.DataProtection;
 using System.Threading.RateLimiting;
+using Progress.Api.Persistence;
+using Microsoft.AspNetCore.DataProtection.KeyManagement;
 
 // Read the password through stdin, never through a command-line argument.
 if (args.Contains("--hash-password"))
@@ -57,19 +59,36 @@ if (args.Contains("--check-database"))
 }
 
 var builder = WebApplication.CreateBuilder(args);
+if (args.Contains("--export-cosmos-migration") || args.Contains("--import-cosmos-migration") || args.Contains("--verify-cosmos-migration"))
+{
+    await Progress.Api.Transfer.CosmosMigration.RunAsync(args, builder.Configuration);
+    return;
+}
 builder.Logging.ClearProviders();
 builder.Logging.AddConsole();
+var provider = builder.Configuration["Database:Provider"] ?? "SqlServer";
+if (provider is not ("SqlServer" or "Cosmos")) throw new InvalidOperationException("Database:Provider debe ser SqlServer o Cosmos.");
+var useCosmos = provider == "Cosmos";
 builder.Services.AddDbContext<ProgressDbContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("Progress"), sql =>
 {
     if (builder.Environment.IsProduction()) sql.EnableRetryOnFailure(6, TimeSpan.FromSeconds(10), null);
 }));
 builder.Services.AddScoped<DashboardService>();
 builder.Services.AddScoped<StrengthProgressService>();
+if (useCosmos)
+{
+    builder.Services.AddSingleton<CosmosRecordStore>();
+    builder.Services.AddSingleton<CosmosXmlRepository>();
+    builder.Services.AddScoped<CosmosDashboardService>();
+    builder.Services.AddScoped<CosmosStrengthProgressService>();
+    builder.Services.AddOptions<KeyManagementOptions>().Configure<CosmosXmlRepository>((options, repository) => options.XmlRepository = repository);
+}
 builder.Services.AddSingleton(TimeProvider.System);
 builder.Services.AddOptions<PersonalAuthOptions>().BindConfiguration("Auth")
     .Validate(o => PersonalAuthenticator.IsValidHash(o.PasswordHash), "Configura Auth:PasswordHash con scripts/New-AuthSecret.ps1.").ValidateOnStart();
 builder.Services.AddSingleton<IPersonalAuthenticator, PersonalAuthenticator>();
-builder.Services.AddDataProtection().SetApplicationName("Trazo").PersistKeysToDbContext<ProgressDbContext>();
+var dataProtection = builder.Services.AddDataProtection().SetApplicationName("Trazo");
+if (!useCosmos) dataProtection.PersistKeysToDbContext<ProgressDbContext>();
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).AddCookie(options =>
 {
     options.Cookie.Name = builder.Environment.IsProduction() ? "__Host-trazo-session" : "trazo-session";
@@ -128,7 +147,7 @@ app.UseExceptionHandler(new ExceptionHandlerOptions
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi().RequireAuthorization();
-    if (app.Configuration.GetValue<bool>("Database:Initialize"))
+    if (!useCosmos && app.Configuration.GetValue<bool>("Database:Initialize"))
     {
         await using var scope = app.Services.CreateAsyncScope();
         var db = scope.ServiceProvider.GetRequiredService<ProgressDbContext>();
@@ -142,6 +161,19 @@ app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
 app.UseRateLimiter();
+app.Use(async (context, next) =>
+{
+    if (app.Configuration.GetValue<bool>("Database:ReadOnly") &&
+        context.Request.Path.StartsWithSegments("/api") &&
+        !context.Request.Path.StartsWithSegments("/api/auth") &&
+        context.Request.Method is not ("GET" or "HEAD" or "OPTIONS"))
+    {
+        context.Response.Headers.RetryAfter = "60";
+        await Results.Problem(statusCode: 503, title: "Estamos actualizando el almacenamiento. Intenta guardar nuevamente en un momento.").ExecuteAsync(context);
+        return;
+    }
+    await next();
+});
 app.Use(async (context, next) =>
 {
     if (context.Request.Path.StartsWithSegments("/api") && !HttpMethods.IsGet(context.Request.Method) && !HttpMethods.IsHead(context.Request.Method) && !HttpMethods.IsOptions(context.Request.Method))
@@ -160,7 +192,8 @@ app.MapGet("/health/live", () => Results.Ok(new { Status = "alive" })).AllowAnon
 // Probes test the process only. Database checks are explicit deployment/functional checks,
 // otherwise periodic readiness traffic would prevent Azure SQL serverless auto-pause.
 app.MapGet("/health/ready", () => Results.Ok(new { Status = "ready" })).AllowAnonymous();
-app.MapApi();
+if (useCosmos) app.MapCosmosApi();
+else app.MapApi();
 app.Map("/api/{**path}", () => Results.NotFound()).RequireAuthorization();
 app.MapFallbackToFile("index.html");
 app.Run();

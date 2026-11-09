@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    <Using Include="Microsoft.AspNetCore.Http" />
+    <Compile Include="../../backend/Models/Activity.cs" Link="Models/Activity.cs" />
+    <Compile Include="../../backend/Models/WalkingDetails.cs" Link="Models/WalkingDetails.cs" />
+    <Compile Include="../../backend/Persistence/CosmosActivityCodec.cs" Link="Persistence/CosmosActivityCodec.cs" />
+  </ItemGroup>
+</Project>
