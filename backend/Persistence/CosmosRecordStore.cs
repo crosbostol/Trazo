@@ -80,7 +80,7 @@ public sealed class CosmosRecordStore : IDisposable
                 throw new InvalidDataException("Invalid payload chunk count.");
             for (var i = 0; i < reference.ChunkCount; i++)
             {
-                var bytesOfChunk = await ReadBytesAsync(CosmosActivityCodec.ChunkId(reference.StorageSha256, i), OwnerId, ct)
+                var bytesOfChunk = await ReadBytesAsync(CosmosActivityCodec.ChunkId(reference.StorageSha256, i, reference.Generation), OwnerId, ct)
                     ?? throw new InvalidDataException("A payload chunk is missing; no partial payload was returned.");
                 chunks.Add(JsonSerializer.Deserialize<CosmosPayloadChunk>(bytesOfChunk, JsonOptions) ?? throw new InvalidDataException("Invalid payload chunk."));
             }
@@ -111,14 +111,26 @@ public sealed class CosmosRecordStore : IDisposable
 
     public async Task<bool> DeleteActivityAsync(Guid id, CancellationToken ct = default)
     {
-        // Immutable chunks can be shared by equal payloads. Keep them rather than
-        // delete a still-referenced payload. A future verified mark/sweep may reclaim
-        // unreferenced chunks; their retained storage counts toward the free quota.
+        var bytes = await ReadBytesAsync(id.ToString("D"), OwnerId, ct);
+        if (bytes is null) return false;
+        using var root = JsonDocument.Parse(bytes);
+        CosmosPayloadReference? payload = null;
+        if (root.RootElement.TryGetProperty("payloadReference", out var manifest) && manifest.ValueKind != JsonValueKind.Null)
+            payload = manifest.Deserialize<CosmosPayloadReference>(JsonOptions);
         try
         {
             using var response = await container.DeleteItemStreamAsync(id.ToString("D"), new PartitionKey(OwnerId), cancellationToken: ct);
             if (response.StatusCode == HttpStatusCode.NotFound) return false;
             response.EnsureSuccessStatusCode();
+            // New chunks belong to a single activity, so successful deletion also
+            // removes its opaque payload. Legacy shared chunks require mark/sweep.
+            if (payload?.Generation is not null)
+                for (var i = 0; i < payload.ChunkCount; i++)
+                {
+                    using var chunkDelete = await container.DeleteItemStreamAsync(
+                        CosmosActivityCodec.ChunkId(payload.StorageSha256, i, payload.Generation), new PartitionKey(OwnerId), cancellationToken: ct);
+                    if (chunkDelete.StatusCode != HttpStatusCode.NotFound) chunkDelete.EnsureSuccessStatusCode();
+                }
             return true;
         }
         catch (CosmosException) { throw new CosmosPersistenceException(); }

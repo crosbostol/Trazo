@@ -1,0 +1,35 @@
+name: Preserve original production image
+on:
+  push:
+    branches: [codex/cosmos-spike]
+    paths: ['.github/workflows/preserve-original.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+  packages: write
+jobs:
+  copy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install OCI copy tool
+        run: sudo apt-get update -qq && sudo apt-get install -y skopeo
+      - uses: docker/login-action@v3
+        with:
+          registry: trazomvp585dbf3fa.azurecr.io
+          username: 00000000-0000-0000-0000-000000000000
+          password: ${{ secrets.TRAZO_ACR_MIGRATION_TOKEN }}
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Copy original image without rebuilding
+        run: >-
+          skopeo copy --all --authfile "$HOME/.docker/config.json"
+          docker://trazomvp585dbf3fa.azurecr.io/trazo:20260927212107
+          docker://ghcr.io/crosbostol/trazo:original-20260927212107
+      - name: Record original digest
+        run: >-
+          skopeo inspect --authfile "$HOME/.docker/config.json"
+          --format '{{.Digest}}'
+          docker://ghcr.io/crosbostol/trazo:original-20260927212107

@@ -59,7 +59,7 @@
             "automatic": true,
             "indexingMode": "consistent",
             "includedPaths": [{ "path": "/*" }],
-            "excludedPaths": [{ "path": "/rawPayloadJson/?" }, { "path": "/xml/?" }, { "path": "/\"_etag\"/?" }],
+            "excludedPaths": [{ "path": "/rawPayloadJson/?" }, { "path": "/xml/?" }, { "path": "/data/?" }, { "path": "/\"_etag\"/?" }],
             "compositeIndexes": [[
               { "path": "/date", "order": "descending" },
               { "path": "/createdAt", "order": "descending" },

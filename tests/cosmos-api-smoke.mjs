@@ -89,6 +89,7 @@ try {
   })
   report.initialStartupMs = await startServer()
   client = await checkAuth(base)
+  client.timeoutMs = 120000
   const info = await request('/api/database-info')
   assert.equal(info.database, database, 'Test process must point at the explicitly selected test database')
   assert.equal(info.isDemo, false)

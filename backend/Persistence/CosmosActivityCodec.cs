@@ -9,7 +9,7 @@ using Progress.Api.Models;
 
 namespace Progress.Api.Persistence;
 
-public sealed record CosmosPayloadReference(string Sha256, int ChunkCount, int ByteLength, int CompressedLength, string StorageSha256);
+public sealed record CosmosPayloadReference(string Sha256, int ChunkCount, int ByteLength, int CompressedLength, string StorageSha256, string? Generation = null);
 public sealed record CosmosPayloadChunk(string Id, string OwnerId, string DocumentType, string Sha256, int Number, string Data);
 public sealed record EncodedCosmosActivity(byte[] DocumentBytes, IReadOnlyList<CosmosPayloadChunk> Chunks);
 
@@ -66,15 +66,16 @@ public static class CosmosActivityCodec
         var storageSha = Convert.ToHexStringLower(SHA256.HashData(compressedBytes));
         var count = (compressedBytes.Length + ChunkBytes - 1) / ChunkBytes;
         var chunks = Enumerable.Range(0, count).Select(number => new CosmosPayloadChunk(
-            ChunkId(storageSha, number), OwnerId, "payloadChunk", storageSha, number,
+            ChunkId(storageSha, number, activity.Id.ToString("N")), OwnerId, "payloadChunk", storageSha, number,
             Convert.ToBase64String(compressedBytes, number * ChunkBytes, Math.Min(ChunkBytes, compressedBytes.Length - number * ChunkBytes)))).ToList();
-        root["payloadReference"] = JsonSerializer.SerializeToNode(new CosmosPayloadReference(sha, count, rawBytes.Length, compressedBytes.Length, storageSha), JsonOptions);
+        root["payloadReference"] = JsonSerializer.SerializeToNode(new CosmosPayloadReference(sha, count, rawBytes.Length, compressedBytes.Length, storageSha, activity.Id.ToString("N")), JsonOptions);
         bytes = JsonSerializer.SerializeToUtf8Bytes(root, JsonOptions);
         if (bytes.Length > MaximumDocumentBytes) throw new InvalidDataException("Activity manifest exceeds the storage limit.");
         return new(bytes, chunks);
     }
 
-    public static string ChunkId(string sha, int number) => $"payload-{sha}-{number:D6}";
+    public static string ChunkId(string sha, int number, string? generation = null) =>
+        generation is null ? $"payload-{sha}-{number:D6}" : $"payload-{generation}-{sha}-{number:D6}";
     private static string UtcTimestamp(DateTime value) => (value.Kind == DateTimeKind.Unspecified
         ? DateTime.SpecifyKind(value, DateTimeKind.Utc) : value.ToUniversalTime()).ToString("O");
 
@@ -104,7 +105,7 @@ public static class CosmosActivityCodec
         {
             var chunk = chunks[number];
             if (chunk.Number != number || chunk.Sha256 != reference.StorageSha256 || chunk.OwnerId != OwnerId ||
-                chunk.DocumentType != "payloadChunk" || chunk.Id != ChunkId(reference.StorageSha256, number))
+                chunk.DocumentType != "payloadChunk" || chunk.Id != ChunkId(reference.StorageSha256, number, reference.Generation))
                 throw new InvalidDataException("Payload chunk identity mismatch.");
             var data = Convert.FromBase64String(chunk.Data);
             if (data.Length > ChunkBytes || compressed.Length + data.Length > reference.CompressedLength)
