@@ -1,0 +1,389 @@
+{
+  "startedAt": "2026-11-08T23:52:32.745Z",
+  "account": "trazospike20261108",
+  "group": "rg-trazo-cosmos-spike-20261108",
+  "database": "spike-20261108",
+  "syntheticDataOnly": true,
+  "transport": "Node 24 fetch, Cosmos REST HTTPS from local workstation to Central US; no .NET/ACA/browser benchmark",
+  "sqlBaseline": {
+    "firstHtmlSeconds": 77.077,
+    "warmHtmlSeconds": 0.425,
+    "anonymousSessionSeconds": 0.162,
+    "measuredAt": "2026-11-08T20:07:47Z",
+    "note": "Includes ACA and SQL resume, unlike this direct Cosmos test"
+  },
+  "checks": [
+    "raw JSON text round-trip: large integers, exponents, duplicates, escaped NUL, decimals",
+    "point read requires matching owner partition",
+    "dashboard fixture: 5 sessions, running-only 15 km, pace 340, heart rate 150; excludes future/other owner",
+    "strength fixtures: grouping/trim, repeated entries, four PRs, tie order, nulls, timed sets, sides",
+    "accent-sensitive exercise separation; unknown weight vs actual zero",
+    "dashboard over five-year history matches independent in-memory calculation (10 repetitions)",
+    "continuation tokens: 50 distinct summaries with page size 17",
+    "oversized document rejected with 413; migration requires explicit payload size strategy",
+    "delete reflected immediately in point read and dashboard",
+    "fresh-process read, dashboard and strength after ten minutes idle",
+    "all 1209 owner activities persisted; owner partition excludes the extra foreign record",
+    "five-year custom range matches independent aggregate reference"
+  ],
+  "batches": [
+    {
+      "label": "seed-1200",
+      "milliseconds": 64396.003,
+      "requests": 1200,
+      "ru": 20970
+    },
+    {
+      "label": "dashboard-full",
+      "milliseconds": 643.705,
+      "requests": 3,
+      "ru": 11.8
+    },
+    {
+      "label": "strength-full",
+      "milliseconds": 604.319,
+      "requests": 2,
+      "ru": 61.49
+    },
+    {
+      "label": "dashboard-full",
+      "milliseconds": 620.992,
+      "requests": 3,
+      "ru": 11.8
+    },
+    {
+      "label": "strength-full",
+      "milliseconds": 602.799,
+      "requests": 2,
+      "ru": 61.49
+    },
+    {
+      "label": "dashboard-full",
+      "milliseconds": 614.591,
+      "requests": 3,
+      "ru": 11.8
+    },
+    {
+      "label": "strength-full",
+      "milliseconds": 636.665,
+      "requests": 2,
+      "ru": 61.49
+    },
+    {
+      "label": "dashboard-full",
+      "milliseconds": 615.855,
+      "requests": 3,
+      "ru": 11.8
+    },
+    {
+      "label": "strength-full",
+      "milliseconds": 664.833,
+      "requests": 2,
+      "ru": 61.49
+    },
+    {
+      "label": "dashboard-full",
+      "milliseconds": 668.484,
+      "requests": 3,
+      "ru": 11.8
+    },
+    {
+      "label": "strength-full",
+      "milliseconds": 614.514,
+      "requests": 2,
+      "ru": 61.49
+    },
+    {
+      "label": "dashboard-full",
+      "milliseconds": 617.787,
+      "requests": 3,
+      "ru": 11.8
+    },
+    {
+      "label": "strength-full",
+      "milliseconds": 650.355,
+      "requests": 2,
+      "ru": 61.49
+    },
+    {
+      "label": "dashboard-full",
+      "milliseconds": 666.768,
+      "requests": 3,
+      "ru": 11.8
+    },
+    {
+      "label": "strength-full",
+      "milliseconds": 664.63,
+      "requests": 2,
+      "ru": 61.49
+    },
+    {
+      "label": "dashboard-full",
+      "milliseconds": 626.225,
+      "requests": 3,
+      "ru": 11.8
+    },
+    {
+      "label": "strength-full",
+      "milliseconds": 613.76,
+      "requests": 2,
+      "ru": 61.49
+    },
+    {
+      "label": "dashboard-full",
+      "milliseconds": 624.201,
+      "requests": 3,
+      "ru": 11.8
+    },
+    {
+      "label": "strength-full",
+      "milliseconds": 655.091,
+      "requests": 2,
+      "ru": 61.49
+    },
+    {
+      "label": "dashboard-full",
+      "milliseconds": 1061.078,
+      "requests": 3,
+      "ru": 11.8
+    },
+    {
+      "label": "strength-full",
+      "milliseconds": 909.982,
+      "requests": 2,
+      "ru": 61.49
+    },
+    {
+      "label": "fresh-process-after-idle-read",
+      "milliseconds": 1025.898,
+      "requests": 1,
+      "ru": 1
+    },
+    {
+      "label": "after-idle-dashboard",
+      "milliseconds": 1587.164,
+      "requests": 3,
+      "ru": 11.8
+    },
+    {
+      "label": "after-idle-strength",
+      "milliseconds": 966.194,
+      "requests": 2,
+      "ru": 61.49
+    },
+    {
+      "label": "all-history-dashboard",
+      "milliseconds": 1015.75,
+      "requests": 3,
+      "ru": 172.26
+    },
+    {
+      "label": "list-full-page",
+      "milliseconds": 484.763,
+      "requests": 3,
+      "ru": 12.2
+    }
+  ],
+  "dataset": {
+    "activities": 1209,
+    "otherOwnerActivities": 1,
+    "historicalActivities": 1200,
+    "historyPayloadBytes": 20000,
+    "logicalBytes": 24497876
+  },
+  "lastDataRequestAt": "2026-11-08T23:54:05.084Z",
+  "readyForIdleProbe": true,
+  "success": true,
+  "sampleGroups": {
+    "seed": {
+      "setup-database": {
+        "requests": 1,
+        "ru": 4.95,
+        "meanRu": 4.95,
+        "p50Ms": 994.864,
+        "p95Ms": 994.864,
+        "retries": 0,
+        "bytes": 169
+      },
+      "setup-container": {
+        "requests": 1,
+        "ru": 1,
+        "meanRu": 1,
+        "p50Ms": 1204.939,
+        "p95Ms": 1204.939,
+        "retries": 0,
+        "bytes": 783
+      },
+      "write": {
+        "requests": 1212,
+        "ru": 21103.7,
+        "meanRu": 17.412,
+        "p50Ms": 288.167,
+        "p95Ms": 584.919,
+        "retries": 0,
+        "bytes": 24747483
+      },
+      "point-read": {
+        "requests": 13,
+        "ru": 24.9,
+        "meanRu": 1.915,
+        "p50Ms": 299.032,
+        "p95Ms": 682.766,
+        "retries": 0,
+        "bytes": 215080
+      },
+      "dashboard-aggregate": {
+        "requests": 12,
+        "ru": 62.18,
+        "meanRu": 5.182,
+        "p50Ms": 297.151,
+        "p95Ms": 743.96,
+        "retries": 0,
+        "bytes": 23947
+      },
+      "dashboard-latest": {
+        "requests": 12,
+        "ru": 36.69,
+        "meanRu": 3.057,
+        "p50Ms": 160.937,
+        "p95Ms": 213.362,
+        "retries": 0,
+        "bytes": 1913
+      },
+      "dashboard-recent": {
+        "requests": 12,
+        "ru": 38.23,
+        "meanRu": 3.186,
+        "p50Ms": 159.947,
+        "p95Ms": 226.515,
+        "retries": 0,
+        "bytes": 9934
+      },
+      "strength-metadata": {
+        "requests": 14,
+        "ru": 308.76,
+        "meanRu": 22.054,
+        "p50Ms": 296.174,
+        "p95Ms": 309.298,
+        "retries": 0,
+        "bytes": 500600
+      },
+      "strength-sets": {
+        "requests": 14,
+        "ru": 332.43,
+        "meanRu": 23.745,
+        "p50Ms": 303.64,
+        "p95Ms": 612.253,
+        "retries": 0,
+        "bytes": 340655
+      },
+      "list-page": {
+        "requests": 3,
+        "ru": 12.2,
+        "meanRu": 4.067,
+        "p50Ms": 159.725,
+        "p95Ms": 189.601,
+        "retries": 0,
+        "bytes": 3152
+      },
+      "delete": {
+        "requests": 1,
+        "ru": 10.1,
+        "meanRu": 10.1,
+        "p50Ms": 144.421,
+        "p95Ms": 144.421,
+        "retries": 0,
+        "bytes": 0
+      }
+    },
+    "probe": {
+      "idle-point-read": {
+        "requests": 1,
+        "ru": 1,
+        "meanRu": 1,
+        "p50Ms": 1025.505,
+        "p95Ms": 1025.505,
+        "retries": 0,
+        "bytes": 727
+      },
+      "dashboard-aggregate": {
+        "requests": 2,
+        "ru": 171.54,
+        "meanRu": 85.77,
+        "p50Ms": 627.915,
+        "p95Ms": 1237.487,
+        "retries": 0,
+        "bytes": 137974
+      },
+      "dashboard-latest": {
+        "requests": 2,
+        "ru": 6.12,
+        "meanRu": 3.06,
+        "p50Ms": 166.142,
+        "p95Ms": 222.944,
+        "retries": 0,
+        "bytes": 316
+      },
+      "dashboard-recent": {
+        "requests": 2,
+        "ru": 6.4,
+        "meanRu": 3.2,
+        "p50Ms": 163.856,
+        "p95Ms": 182.627,
+        "retries": 0,
+        "bytes": 1674
+      },
+      "strength-metadata": {
+        "requests": 1,
+        "ru": 29.54,
+        "meanRu": 29.54,
+        "p50Ms": 445.469,
+        "p95Ms": 445.469,
+        "retries": 0,
+        "bytes": 49564
+      },
+      "strength-sets": {
+        "requests": 1,
+        "ru": 31.95,
+        "meanRu": 31.95,
+        "p50Ms": 514.71,
+        "p95Ms": 514.71,
+        "retries": 0,
+        "bytes": 33972
+      },
+      "owner-count": {
+        "requests": 1,
+        "ru": 3.09,
+        "meanRu": 3.09,
+        "p50Ms": 191.984,
+        "p95Ms": 191.984,
+        "retries": 0,
+        "bytes": 53
+      },
+      "history-point-read": {
+        "requests": 10,
+        "ru": 21.9,
+        "meanRu": 2.19,
+        "p50Ms": 299.368,
+        "p95Ms": 613.821,
+        "retries": 0,
+        "bytes": 206248
+      },
+      "list-page": {
+        "requests": 3,
+        "ru": 12.2,
+        "meanRu": 4.067,
+        "p50Ms": 161.724,
+        "p95Ms": 162.086,
+        "retries": 0,
+        "bytes": 3152
+      }
+    }
+  },
+  "updatedAt": "2026-11-09T00:04:20.988Z",
+  "idleProbe": {
+    "idleSeconds": 607.286,
+    "measuredAt": "2026-11-09T00:04:20.987Z",
+    "note": "Direct Cosmos requests from a new local Node process after >=10 min; not the full Trazo startup or a 60-minute idle test"
+  }
+}

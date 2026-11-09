@@ -1,0 +1,80 @@
+{
+  "queriedAt": "2026-11-09T00:06:10.356Z",
+  "currency": "USD",
+  "source": "https://prices.azure.com/api/retail/prices?%24filter=armRegionName+eq+%27centralus%27+and+%28serviceName+eq+%27Azure+Cosmos+DB%27+or+serviceName+eq+%27Container+Registry%27+or+serviceName+eq+%27SQL+Database%27%29+and+priceType+eq+%27Consumption%27",
+  "registrySource": "https://prices.azure.com/api/retail/prices?%24filter=armRegionName+eq+%27eastus2%27+and+serviceName+eq+%27Container+Registry%27+and+priceType+eq+%27Consumption%27",
+  "meters": {
+    "serverlessRu": {
+      "product": "Azure Cosmos DB serverless",
+      "meter": "1M RUs",
+      "sku": "RUs",
+      "unit": "1M",
+      "usd": 0.282,
+      "region": "centralus",
+      "effectiveStartDate": "2021-07-01T00:00:00Z",
+      "meterId": "5430dee3-12d2-5a41-85b8-d4c8a3206515"
+    },
+    "storage": {
+      "product": "Azure Cosmos DB",
+      "meter": "Data Stored",
+      "sku": "RUs",
+      "unit": "1 GB/Month",
+      "usd": 0.25,
+      "region": "centralus",
+      "effectiveStartDate": "2016-04-01T00:00:00Z",
+      "meterId": "56f07b6a-c7d9-490f-a196-a7ee08e28712"
+    },
+    "sqlBasic": {
+      "product": "SQL Database Single Basic",
+      "meter": "B DTU",
+      "sku": "B",
+      "unit": "1/Day",
+      "usd": 0.161,
+      "region": "centralus",
+      "effectiveStartDate": "2014-11-01T00:00:00Z",
+      "meterId": "cae64797-9ecf-4906-b517-6238c80c045f"
+    },
+    "registryBasic": {
+      "product": "Container Registry",
+      "meter": "Basic Registry Unit",
+      "sku": "Basic",
+      "unit": "1/Day",
+      "usd": 0.1666,
+      "region": "eastus2",
+      "effectiveStartDate": "2018-01-01T00:00:00Z",
+      "meterId": "5c9e7a65-5784-494c-9718-7749d4075dd9"
+    }
+  },
+  "scenario": {
+    "dashboards": 60,
+    "strengthViews": 30,
+    "listPages": 120,
+    "activityDetails": 100,
+    "writes": 32,
+    "deletes": 20,
+    "logicalStorageGb": 0.05
+  },
+  "measuredRuPerOperation": {
+    "dashboard": 11.799999999999999,
+    "strength": 61.489999999999995,
+    "listPage": 12.2,
+    "detail": 2.19,
+    "write20Kb": 17.475
+  },
+  "estimate": {
+    "monthlyRu": 4996.9,
+    "monthlyOperationsUsd": 0.0014091257999999996,
+    "monthlyStorageUsd": 0.0125,
+    "monthlyCosmosUsdBeforeIndexOverhead": 0.0139091258,
+    "sqlBasicMonthlyUsd": 4.9008400000000005,
+    "registryBasicMonthlyUsd": 5.0713040000000005
+  },
+  "caveats": [
+    "Scenario is synthetic, not actual usage or an Azure invoice.",
+    "Storage estimate excludes index overhead; Cosmos charges for stored data including indexes.",
+    "No compute hosting, networking, restore charges, tax or subscription discounts included.",
+    "Write estimate uses 20 KB activities for every write, including smaller body measurements (conservative).",
+    "Strength view reads all exercise metadata and the selected history: cost grows with history.",
+    "Registry meter uses the production registry region, East US 2; SQL/Cosmos use Central US."
+  ]
+}

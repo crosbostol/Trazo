@@ -261,3 +261,15 @@ El arranque en producción no migra ni agrega seed automáticamente. El estado c
 4. Definir acceso privado, restauración de Azure SQL y presupuesto de Azure antes de desplegar.
 
 Garmin, importación de archivos deportivos, IA y analytics avanzados quedan fuera de esta iteración. La importación de JSON pegado sí está disponible.
+
+## Evaluación de infraestructura — noviembre de 2026
+
+El [release v0.1.0](https://github.com/crosbostol/Trazo/releases/tag/v0.1.0)
+conserva el código anterior a la evaluación de Cosmos DB, con bundle Git verificado
+y una referencia de configuración Azure sin secretos. No incluye un backup de la base.
+
+La primera respuesta HTML desde ACA en cero y SQL pausado tardó 77,077 segundos
+en la medición del 08-11-2026. Se preparó una prueba separada de Cosmos con datos
+ficticios, sin cambiar el provider ni el deployment de Trazo. Resultados, costos,
+límites y pasos pendientes en [el informe de viabilidad](docs/cosmos-feasibility-20261108.md);
+instrucciones reproducibles en [experiments/cosmos-spike](experiments/cosmos-spike/README.md).
