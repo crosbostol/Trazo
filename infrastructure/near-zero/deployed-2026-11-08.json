@@ -1,5 +1,5 @@
 {
-  "recordedAt": "2026-11-09T01:51:05.235Z",
+  "recordedAt": "2026-11-09T02:01:28.242Z",
   "applicationProvider": "Cosmos",
   "image": "ghcr.io/crosbostol/trazo@sha256:047eff8311e957c1664db0124790bc6173cec2b449417fdefc531af7308b704a",
   "applicationImageCommit": "53a3c2aebb148bb912f1e1e19671905e59d75842",
@@ -14,7 +14,7 @@
     "localKeyAuth": false
   },
   "scale": {
-    "min": 0,
+    "min": 1,
     "max": 1,
     "cpu": 0.25,
     "memoryGiB": 0.5
@@ -42,6 +42,49 @@
   "notes": [
     "Measurements are individual observations, not latency guarantees.",
     "Free quotas and storage limits apply; Container Apps grants are shared.",
-    "No actual data, password, cookie or billing export is included in this evidence."
-  ]
+    "No actual data, password, cookie or billing export is included in this evidence.",
+    "Cold-start measurements above belong to the former minReplicas=0 configuration; the user subsequently selected minReplicas=1."
+  ],
+  "revision": "trazo-mvp--always-ready-20261108",
+  "replicaPolicy": {
+    "alwaysReady": true,
+    "changedAt": "2026-11-09T02:00:24.325Z",
+    "reason": "User selected one running replica to avoid ordinary scale-to-zero startup",
+    "monthlyIdleEstimateUsd": {
+      "hours": 730,
+      "withFullFreeGrants": 4.293,
+      "withoutFreeGrants": 5.913
+    },
+    "activeUsageAdditional": true
+  },
+  "alwaysReadyVerification": {
+    "measuredAt": "2026-11-09T02:00:24.325Z",
+    "samples": [
+      {
+        "route": "/",
+        "status": 200,
+        "seconds": 0.537
+      },
+      {
+        "route": "/",
+        "status": 200,
+        "seconds": 0.422
+      },
+      {
+        "route": "/api/auth/session",
+        "status": 200,
+        "seconds": 0.15
+      },
+      {
+        "route": "/health/ready",
+        "status": 200,
+        "seconds": 0.139
+      },
+      {
+        "route": "/api/dashboard",
+        "status": 401,
+        "seconds": 0.207
+      }
+    ]
+  }
 }

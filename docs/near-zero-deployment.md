@@ -1,4 +1,4 @@
-# Producción: Cosmos Free Tier + GHCR
+# Producción: Cosmos Free Tier + GHCR + API siempre encendida
 
 Desplegado el 08-11-2026. Este documento sustituye para producción las guías
 históricas de provisioning SQL/ACR. El desarrollo local sigue usando SQL Server
@@ -8,8 +8,8 @@ URL: https://trazo-mvp.agreeableisland-910dddf7.centralus.azurecontainerapps.io
 
 ## Configuración
 
-- ACA `trazo-mvp`, Central US, Consumption, 0,25 CPU/0,5 GiB, escala 0–1.
-- Revisión final `trazo-mvp--cosmos-ready-20261108`. Readiness cada 2 segundos,
+- ACA `trazo-mvp`, Central US, Consumption, 0,25 CPU/0,5 GiB, mínimo 1 y máximo 1 réplica.
+- Revisión actual `trazo-mvp--always-ready-20261108`. Readiness cada 2 segundos,
   inicio inmediato y una confirmación; liveness conserva su configuración previa.
 - Provider `Database__Provider=Cosmos`; modo de solo lectura desactivado después
   de la migración. Inicialización y seed siguen desactivados en Production.
@@ -31,6 +31,21 @@ URL: https://trazo-mvp.agreeableisland-910dddf7.centralus.azurecontainerapps.io
 El registro dedicado `trazomvp585dbf3fa` de ACR se retiró después de verificar
 la copia original en GHCR y las lecturas autenticadas en producción. No se tocaron
 otros registros ni aplicaciones de la suscripción.
+
+El usuario eligió mantener una réplica encendida el 08-11-2026 para evitar el
+arranque habitual al entrar. Se modificó únicamente la escala, conservando imagen,
+datos, autenticación y recursos. La réplica se verificó en estado Running; el HTML
+respondió en 0,537 s (segunda petición 0,422 s), sesión anónima en 0,150 s y readiness
+en 0,139 s. El dashboard anónimo mantuvo 401. Estas mediciones no incluyen el render
+del navegador ni garantizan disponibilidad ante reinicios de plataforma.
+
+Estimación de cómputo para 730 horas/mes en reposo con esta asignación: unos USD
+4,29 si las cuotas gratuitas están disponibles, o USD 5,91 sin ellas. El tiempo
+activo se cobra a su tarifa correspondiente y puede elevar ese costo. Es una
+estimación, no un límite de factura. La memoria y vCPU idle consultadas en Central
+US cuestan USD 0,000003 por GiB-segundo y vCPU-segundo, respectivamente. Las cuotas
+se comparten con otras aplicaciones. [Facturación](https://learn.microsoft.com/azure/container-apps/billing),
+[precios](https://azure.microsoft.com/pricing/details/container-apps/).
 
 ## Conservación de datos y sesiones
 
@@ -84,7 +99,7 @@ por ACL; ningún export de datos reales se publicó en el repositorio o release.
   de actividades coincidió con el snapshot final.
 
 Se observaron cero réplicas mediante Management y luego se midió el primer HTTPS,
-sin forzar reinicios ni pausar bases:
+sin forzar reinicios ni pausar bases, **antes de elegir mínimo 1**:
 
 | Configuración | Primer HTML | Sesión anónima adicional |
 | --- | ---: | ---: |
@@ -103,7 +118,8 @@ autenticado en 0,90 s. No son garantías de latencia máxima ni mediciones de re
 El test reproducible `tests/azure-cold-start.mjs` usa `TRAZO_SUBSCRIPTION`,
 `TRAZO_GROUP`, `TRAZO_APP` y `TRAZO_URL`; observa la revisión más reciente en modo
 Single y no modifica escala ni fuerza reinicios. Solo hace GET anónimos después
-de comprobar cero réplicas.
+de comprobar cero réplicas. La configuración actual de mínimo 1 es incompatible
+con ese test por diseño: no debe volver a ponerse mínimo 0 solo para ejecutarlo.
 
 ## Modelo físico y límites
 

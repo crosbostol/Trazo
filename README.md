@@ -1,6 +1,6 @@
 # Trazo · diario personal de entrenamiento
 
-MVP para registrar running, fuerza, caminatas, ciclismo, hiking, otros deportes y mediciones corporales. React + TypeScript + Vite y ASP.NET Core 10. Desarrollo local con EF Core/SQL Server; **producción migrada el 08-11-2026 a Cosmos DB Free Tier + GHCR + Container Apps Consumption con escala a cero**. Se conservaron datos, claves de sesión, SQL y el checkpoint anterior para rollback. ACR fue retirado después de preservar su imagen original en GHCR. Estado, costos, límites y operaciones actuales en [docs/near-zero-deployment.md](docs/near-zero-deployment.md).
+MVP para registrar running, fuerza, caminatas, ciclismo, hiking, otros deportes y mediciones corporales. React + TypeScript + Vite y ASP.NET Core 10. Desarrollo local con EF Core/SQL Server; **producción migrada el 08-11-2026 a Cosmos DB Free Tier + GHCR + Container Apps Consumption, con una réplica siempre encendida por elección del usuario**. Se conservaron datos, claves de sesión, SQL y el checkpoint anterior para rollback. ACR fue retirado después de preservar su imagen original en GHCR. Estado, costos, límites y operaciones actuales en [docs/near-zero-deployment.md](docs/near-zero-deployment.md).
 
 ## Ejecutar localmente
 
@@ -274,6 +274,7 @@ ficticios, sin cambiar el provider ni el deployment de Trazo. Resultados, costos
 límites y pasos pendientes en [el informe de viabilidad](docs/cosmos-feasibility-20261108.md);
 instrucciones reproducibles en [experiments/cosmos-spike](experiments/cosmos-spike/README.md).
 
-La ruta elegida para acercarse a costo cero es Cosmos Free Tier + GHCR + ACA
-Consumption con escala a cero. [Plan, límites y validación de infraestructura](docs/near-zero-plan.md).
-Producción ya migró; [estado desplegado, pruebas y rollback](docs/near-zero-deployment.md).
+La migración a Cosmos Free Tier + GHCR retiró ACR y la espera de reanudación de SQL.
+Después se eligió mantener una réplica ACA encendida para evitar el arranque
+habitual de 36 segundos; costo idle estimado de USD 4–6/mes según cuotas, más uso
+activo. [Estado actual, pruebas, costos y rollback](docs/near-zero-deployment.md).
