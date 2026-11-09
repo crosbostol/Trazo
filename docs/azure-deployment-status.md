@@ -1,3 +1,5 @@
+> Histórico. El 08-11-2026 producción pasó a Cosmos Free Tier + GHCR y ACR fue retirado. Estado actual y rollback en [near-zero-deployment.md](near-zero-deployment.md). SQL se conserva como origen de rollback.
+
 # Azure SQL + Trazo verificados — actualizado 28-09-2026 UTC
 
 URL pública: https://trazo-mvp.agreeableisland-910dddf7.centralus.azurecontainerapps.io

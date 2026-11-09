@@ -72,3 +72,13 @@ Check(nullDecoded.RawPayload is null && nullDecoded.RawPayloadJson is null, "Abs
 Check(nullDecoded.Walking?.DistanceKm is null && nullDecoded.Walking?.TotalDurationSeconds == 60,
     "Unknown normalized metrics stay null");
 Console.WriteLine("PASS absent payload and unknown metrics remain null");
+
+const string spaced = "{\n  \"huge\": 1e200000,\r\n  \"id\": 9007199254740993, \"unicode\": \"ñ\", \"escaped\": \"\\u00f1\"\n}";
+var snapshotActivity = new Activity { Date = new(2026, 11, 8), Type = ActivityType.Other, DurationSeconds = 60, RawPayload = JsonDocument.Parse(spaced) };
+using var snapshotJson = JsonDocument.Parse(JsonSerializer.Serialize(new { Activities = new[] { snapshotActivity } }, CosmosActivityCodec.JsonOptions));
+var restored = snapshotJson.RootElement.GetProperty("activities").Deserialize<List<Activity>>(CosmosActivityCodec.JsonOptions)!;
+Check(restored[0].RawPayloadJson != spaced, "Regression must exercise whitespace normalization by nested JSON serialization");
+CosmosSnapshotCodec.RestoreOriginalPayloads(snapshotJson.RootElement.GetProperty("activities"), restored);
+Check(restored[0].RawPayloadJson == spaced, "Snapshot restore must use the exact original text field, including whitespace and escaping");
+Check(CosmosActivityCodec.Decode(CosmosActivityCodec.Encode(restored[0]).DocumentBytes).RawPayloadJson == spaced, "Restored original text must round-trip through Cosmos");
+Console.WriteLine("PASS migration snapshot preserves original whitespace, escaping, Unicode and number tokens");

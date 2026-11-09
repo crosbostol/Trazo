@@ -222,5 +222,38 @@ public sealed class CosmosRecordStore : IDisposable
         catch (CosmosException) { throw new CosmosPersistenceException(); }
     }
 
+    // One-time guarded correction for a historical snapshot reader. Never upserts,
+    // never changes metrics/timestamps, and never overwrites a concurrent change.
+    public async Task RestoreOriginalPayloadTextAsync(Activity desired, string? expectedNormalizedText, CancellationToken ct = default)
+    {
+        using var response = await container.ReadItemStreamAsync(desired.Id.ToString("D"), new PartitionKey(OwnerId), cancellationToken: ct);
+        response.EnsureSuccessStatusCode();
+        var etag = response.Headers.ETag;
+        using var buffer = new MemoryStream();
+        await response.Content.CopyToAsync(buffer, ct);
+        var root = JsonNode.Parse(buffer.ToArray())!.AsObject();
+        if (root.ContainsKey("payloadReference") || root["rawPayloadJson"]?.GetValue<string>() != expectedNormalizedText)
+            throw new InvalidDataException("El documento ya no coincide con la copia normalizada; reparación cancelada.");
+        var actual = CosmosActivityCodec.Decode(buffer.ToArray());
+        actual.RawPayload = desired.RawPayload;
+        static void Sort(Activity a)
+        {
+            a.Exercises = a.Exercises.OrderBy(e => e.Order).ThenBy(e => e.Id).ToList();
+            foreach (var e in a.Exercises) e.Sets = e.Sets.OrderBy(s => s.SetNumber).ToList();
+            if (a.Running is not null) a.Running.Laps = a.Running.Laps.OrderBy(l => l.LapNumber).ToList();
+        }
+        Sort(actual); Sort(desired);
+        if (!JsonNode.DeepEquals(JsonNode.Parse(CosmosActivityCodec.Encode(actual).DocumentBytes), JsonNode.Parse(CosmosActivityCodec.Encode(desired).DocumentBytes)))
+            throw new InvalidDataException("Los metadatos cambiaron; reparación cancelada.");
+        root["rawPayloadJson"] = desired.RawPayloadJson;
+        foreach (var key in root.Select(p => p.Key).Where(k => k.StartsWith('_')).ToList()) root.Remove(key);
+        var bytes = JsonSerializer.SerializeToUtf8Bytes(root, JsonOptions);
+        if (bytes.Length > CosmosActivityCodec.MaximumDocumentBytes) throw new InvalidDataException("La corrección requiere fragmentación y se detuvo sin escribir.");
+        using var replacement = new MemoryStream(bytes, writable: false);
+        using var written = await container.ReplaceItemStreamAsync(replacement, desired.Id.ToString("D"), new PartitionKey(OwnerId),
+            new ItemRequestOptions { IfMatchEtag = etag }, ct);
+        written.EnsureSuccessStatusCode();
+    }
+
     public void Dispose() => client.Dispose();
 }

@@ -16,7 +16,7 @@ public static class CosmosMigration
 
     public static async Task RunAsync(string[] args, IConfiguration configuration)
     {
-        var command = args.First(a => a is "--export-cosmos-migration" or "--import-cosmos-migration" or "--verify-cosmos-migration");
+        var command = args.First(a => a is "--export-cosmos-migration" or "--import-cosmos-migration" or "--verify-cosmos-migration" or "--repair-cosmos-payload-text");
         var position = Array.IndexOf(args, command);
         if (position + 1 >= args.Length) throw new InvalidOperationException("Indica un archivo privado de migración.");
         var path = Path.GetFullPath(args[position + 1]);
@@ -40,13 +40,38 @@ public static class CosmosMigration
             return;
         }
         await using var source = File.OpenRead(path);
-        var data = await JsonSerializer.DeserializeAsync<Snapshot>(source, CosmosActivityCodec.JsonOptions)
+        using var saved = await JsonDocument.ParseAsync(source);
+        var data = saved.RootElement.Deserialize<Snapshot>(CosmosActivityCodec.JsonOptions)
             ?? throw new InvalidDataException("Respaldo vacío.");
         if (data.Version != 1) throw new InvalidDataException("Versión de respaldo no soportada.");
+        var normalizedTexts = data.Activities.ToDictionary(a => a.Id, a => a.RawPayloadJson);
+        CosmosSnapshotCodec.RestoreOriginalPayloads(saved.RootElement.GetProperty("activities"), data.Activities);
         using var store = new CosmosRecordStore(configuration);
         var repository = new CosmosXmlRepository(store);
         // Validate every activity before publishing any root item (including size/precision support).
         foreach (var activity in data.Activities) _ = CosmosActivityCodec.Encode(activity);
+        if (command == "--repair-cosmos-payload-text")
+        {
+            var repaired = 0;
+            var skippedDeleted = 0;
+            foreach (var activity in data.Activities)
+            {
+                var actual = await store.ReadActivityAsync(activity.Id);
+                if (actual is null) { skippedDeleted++; continue; }
+                if (actual.RawPayloadJson == activity.RawPayloadJson) continue;
+                if (actual.RawPayloadJson != normalizedTexts[activity.Id])
+                    throw new InvalidDataException("El payload fue cambiado después de la migración; no se reemplazó.");
+                actual.RawPayload = activity.RawPayload;
+                if (Fingerprint(actual) != Fingerprint(activity))
+                    throw new InvalidDataException("La actividad cambió después de la migración; no se reemplazó.");
+                await store.RestoreOriginalPayloadTextAsync(activity, normalizedTexts[activity.Id]);
+                var verified = await store.ReadActivityAsync(activity.Id) ?? throw new InvalidDataException("Actividad desapareció durante la reparación.");
+                if (Fingerprint(verified) != Fingerprint(activity)) throw new InvalidDataException("La reparación no coincide con el origen.");
+                repaired++;
+            }
+            Console.WriteLine(JsonSerializer.Serialize(new { RepairedPayloadTexts = repaired, SkippedDeletedActivities = skippedDeleted, SourcePayloadTextVerified = true }));
+            return;
+        }
         if (command == "--import-cosmos-migration")
         {
             foreach (var key in data.Keys) repository.StoreElement(XElement.Parse(key.Xml), key.FriendlyName);

@@ -11,5 +11,6 @@
     <Compile Include="../../backend/Models/Activity.cs" Link="Models/Activity.cs" />
     <Compile Include="../../backend/Models/WalkingDetails.cs" Link="Models/WalkingDetails.cs" />
     <Compile Include="../../backend/Persistence/CosmosActivityCodec.cs" Link="Persistence/CosmosActivityCodec.cs" />
+    <Compile Include="../../backend/Persistence/CosmosSnapshotCodec.cs" Link="Persistence/CosmosSnapshotCodec.cs" />
   </ItemGroup>
 </Project>

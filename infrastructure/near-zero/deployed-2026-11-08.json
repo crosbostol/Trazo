@@ -1,0 +1,47 @@
+{
+  "recordedAt": "2026-11-09T01:51:05.235Z",
+  "applicationProvider": "Cosmos",
+  "image": "ghcr.io/crosbostol/trazo@sha256:047eff8311e957c1664db0124790bc6173cec2b449417fdefc531af7308b704a",
+  "applicationImageCommit": "53a3c2aebb148bb912f1e1e19671905e59d75842",
+  "originalImage": "ghcr.io/crosbostol/trazo@sha256:fe03fbef4faa414655af0f81a2731115fcf17224684282d03eef8c9be5caaab4",
+  "originalImageCopiedWithoutRebuild": true,
+  "cosmos": {
+    "freeTier": true,
+    "accountThroughputLimit": 1000,
+    "containerThroughput": 400,
+    "regions": 1,
+    "backup": "Continuous7Days",
+    "localKeyAuth": false
+  },
+  "scale": {
+    "min": 0,
+    "max": 1,
+    "cpu": 0.25,
+    "memoryGiB": 0.5
+  },
+  "acrRetired": true,
+  "testApplicationRemoved": true,
+  "testDatabaseRemoved": true,
+  "sourceSqlRetained": true,
+  "encryptedSnapshotOutsideWorkspace": true,
+  "sourcePayloadTextVerifiedOverHttps": true,
+  "sourceKeyCompatibilityVerified": true,
+  "coldStart": {
+    "beforeSqlHtmlSeconds": 77.077,
+    "cosmosOriginalReadinessHtmlSeconds": 41.75749670000002,
+    "final": {
+      "measuredAt": "2026-11-09T01:44:59.734Z",
+      "revision": "trazo-mvp--cosmos-ready-20261108",
+      "zeroReplicasObserved": true,
+      "htmlSeconds": 36.27154879999999,
+      "headersSeconds": 36.2677279,
+      "anonymousSessionAdditionalSeconds": 0.4608205000000307,
+      "method": "Anonymous HTTPS after management-only observation of natural scale-to-zero; no forced restart"
+    }
+  },
+  "notes": [
+    "Measurements are individual observations, not latency guarantees.",
+    "Free quotas and storage limits apply; Container Apps grants are shared.",
+    "No actual data, password, cookie or billing export is included in this evidence."
+  ]
+}

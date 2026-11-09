@@ -1,7 +1,7 @@
 name: Build Trazo containers
 on:
   push:
-    branches: [codex/cosmos-spike]
+    branches: [main]
     paths: ['backend/**', 'frontend/**', 'tests/**', 'Dockerfile', '.github/workflows/container.yml']
   workflow_dispatch:
 permissions:
@@ -39,9 +39,6 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - variant: checkpoint
-            ref: v0.1.0
-            tag: checkpoint-v0.1.0
           - variant: candidate
             ref: ${{ github.sha }}
             tag: candidate-${{ github.sha }}

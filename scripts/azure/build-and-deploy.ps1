@@ -4,6 +4,11 @@ param([string]$ConfigPath = "$PSScriptRoot/config.local.ps1", [switch]$Execute)
 Load-TrazoConfig $ConfigPath
 if (-not $Execute) { Write-Host 'Plan: build local, push ACR, secrets, revisión única Consumption, firewall de IPs de salida y health. Requiere migraciones previas. Usa -Execute tras aprobar Paso B.'; return }
 Assert-TrazoGroup
+$currentApps = @(Invoke-Az @('containerapp','list','-g',$Config.ResourceGroup))
+$currentApp = $currentApps | Where-Object name -eq $Config.ContainerAppName
+if ($currentApp -and @($currentApp.properties.template.containers[0].env | Where-Object { $_.name -eq 'Database__Provider' -and $_.value -eq 'Cosmos' }).Count -gt 0) {
+    throw 'Producción ya usa Cosmos. Este deploy SQL antiguo reemplazaría la configuración. Usa scripts/azure/update-cosmos-image.ps1; rollback SQL explícito en docs/near-zero-deployment.md.'
+}
 if ((Read-Host 'Escribe DEPLOY tras verificar migraciones y, en el primer deploy, cero actividades/mediciones') -cne 'DEPLOY') { throw 'Cancelado.' }
 $registry = Invoke-Az @('acr','show','-g',$Config.ResourceGroup,'-n',$Config.RegistryName)
 $identity = Invoke-Az @('identity','show','-g',$Config.ResourceGroup,'-n',$Config.PullIdentityName)

@@ -1,10 +1,10 @@
 # Trazo · diario personal de entrenamiento
 
-MVP para registrar running, fuerza, caminatas, ciclismo, hiking, otros deportes y mediciones corporales. React + TypeScript + Vite y ASP.NET Core 10 con EF Core/SQL Server. Incluye login personal por contraseña, imagen Docker conjunta y scripts manuales de Azure. **Fase 3: Azure SQL Free y Production verificados. Other/períodos y WalkingDetails se desplegaron el 27-09-2026 en la revisión `trazo-mvp--20260927160726`. El PostgreSQL antiguo de Azure fue eliminado con autorización; el volumen PostgreSQL local se conserva.** Plan, costos y procedimiento en [docs/azure-deployment.md](docs/azure-deployment.md).
+MVP para registrar running, fuerza, caminatas, ciclismo, hiking, otros deportes y mediciones corporales. React + TypeScript + Vite y ASP.NET Core 10. Desarrollo local con EF Core/SQL Server; **producción migrada el 08-11-2026 a Cosmos DB Free Tier + GHCR + Container Apps Consumption con escala a cero**. Se conservaron datos, claves de sesión, SQL y el checkpoint anterior para rollback. ACR fue retirado después de preservar su imagen original en GHCR. Estado, costos, límites y operaciones actuales en [docs/near-zero-deployment.md](docs/near-zero-deployment.md).
 
 ## Ejecutar localmente
 
-Requisitos: .NET SDK 10, Node 24, Docker Desktop con contenedores Linux y unos 2 GiB libres para SQL Server 2022 Developer. El backend usa exclusivamente SQL Server/Azure SQL; no conecta con PostgreSQL.
+Requisitos: .NET SDK 10, Node 24, Docker Desktop con contenedores Linux y unos 2 GiB libres para SQL Server 2022 Developer. El provider local predeterminado es SqlServer; producción configura `Database__Provider=Cosmos`. No conecta con PostgreSQL.
 
 ```powershell
 ./scripts/Use-LocalDatabase.ps1
@@ -91,7 +91,7 @@ Para detener solo SQL nuevo: `docker compose stop sqlserver`. Para tests sobre e
 - **Sensaciones** en `Activity`: `Mood` y `Energy` de 1–5, `Rpe` de 1–10, todos opcionales; `SubjectiveNotes` separa sensaciones de las notas generales.
 - **JSON opaco en `nvarchar(max)`**, con CHECK `ISJSON(..., VALUE)`. Conserva texto, exponentes, decimales y claves duplicadas sin convertir números a double. `rawPayload` y `rawPayloadJson` conservan el contrato; el segundo evita redondeos en clientes JavaScript. Ya no se aplican los límites internos de JSONB: por ejemplo, `1e200000` y un NUL escapado pueden almacenarse como texto JSON. No se interpretan ni extraen métricas del payload. Ver [diferencias del provider](docs/sql-server-migration.md).
 - **Recharts** para gráficos SVG responsive, en un chunk separado. El formulario de registro se carga de forma diferida. Fuentes incluidas en el frontend.
-- **Autenticación personal por contraseña** detrás de `IPersonalAuthenticator`, cookie HttpOnly/Secure en Production, 12 horas, CSRF en escrituras y rate limit de login. Key ring persistido en Azure SQL para soportar reinicios/réplicas. Sin tabla Users ni multiusuario; evolución documentada en [docs/multi-user-roadmap.md](docs/multi-user-roadmap.md).
+- **Autenticación personal por contraseña** detrás de `IPersonalAuthenticator`, cookie HttpOnly/Secure en Production, 12 horas, CSRF en escrituras y rate limit de login. Key ring persistido en Cosmos en producción y SQL en el provider local, para soportar reinicios/réplicas. Sin tabla Users ni multiusuario; evolución documentada en [docs/multi-user-roadmap.md](docs/multi-user-roadmap.md).
 - `UpdatedAt` se inicializa junto a `CreatedAt`. No hay endpoint de edición en esta iteración; al añadirlo se deberá actualizar ese timestamp.
 
 ### Semántica del dashboard
@@ -251,14 +251,14 @@ Para aplicar explícitamente la migración fuera del arranque de desarrollo, con
 dotnet ef database update --project backend
 ```
 
-El arranque en producción no migra ni agrega seed automáticamente. El estado comprobado de Azure está en [docs/azure-deployment-status.md](docs/azure-deployment-status.md). No hay pipelines. El Dockerfile multi-stage compila React/backend y sirve ambos desde ASP.NET en el puerto 8080; probar con `docker build -t trazo:phase3 .` y `node tests/docker-smoke.mjs`. Los scripts de provisioning, migración, deployment, estado, rotación y destroy están en `scripts/azure`; véase [el procedimiento completo](docs/azure-deployment.md). No ejecutar destroy: PostgreSQL requiere una autorización posterior para su eliminación.
+El arranque en producción no migra ni agrega seed automáticamente. El estado actual está en [docs/near-zero-deployment.md](docs/near-zero-deployment.md); los documentos Azure SQL anteriores son históricos. GitHub Actions compila, prueba con SQL aislado y publica imágenes en GHCR; no despliega automáticamente. El Dockerfile multi-stage sirve React y API en el puerto 8080. El helper `scripts/azure/update-cosmos-image.ps1` actualiza una imagen por digest conservando la configuración actual. El deploy SQL/ACR antiguo rechaza modificar una aplicación Cosmos. No ejecutar scripts de destroy históricos sobre los recursos conservados para rollback.
 
 ## Siguiente iteración propuesta
 
 1. Edición de registros y paginación/filtros por fechas.
 2. Afinar la captura de ritmos como `mm:ss` y laps en una tabla editable.
 3. Agregar pruebas automatizadas de navegador y más casos de consistencia entre métricas.
-4. Definir acceso privado, restauración de Azure SQL y presupuesto de Azure antes de desplegar.
+4. Probar restauración PITR de Cosmos y vigilar las cuotas compartidas de Azure.
 
 Garmin, importación de archivos deportivos, IA y analytics avanzados quedan fuera de esta iteración. La importación de JSON pegado sí está disponible.
 
@@ -276,4 +276,4 @@ instrucciones reproducibles en [experiments/cosmos-spike](experiments/cosmos-spi
 
 La ruta elegida para acercarse a costo cero es Cosmos Free Tier + GHCR + ACA
 Consumption con escala a cero. [Plan, límites y validación de infraestructura](docs/near-zero-plan.md).
-Todavía no se ha migrado producción.
+Producción ya migró; [estado desplegado, pruebas y rollback](docs/near-zero-deployment.md).

@@ -59,7 +59,7 @@ if (args.Contains("--check-database"))
 }
 
 var builder = WebApplication.CreateBuilder(args);
-if (args.Contains("--export-cosmos-migration") || args.Contains("--import-cosmos-migration") || args.Contains("--verify-cosmos-migration"))
+if (args.Contains("--export-cosmos-migration") || args.Contains("--import-cosmos-migration") || args.Contains("--verify-cosmos-migration") || args.Contains("--repair-cosmos-payload-text"))
 {
     await Progress.Api.Transfer.CosmosMigration.RunAsync(args, builder.Configuration);
     return;
