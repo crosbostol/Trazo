@@ -192,7 +192,7 @@
     "logicalBytes": 24497876
   },
   "lastDataRequestAt": "2026-11-08T23:54:05.084Z",
-  "readyForIdleProbe": true,
+  "readyForIdleProbe": false,
   "success": true,
   "sampleGroups": {
     "seed": {
@@ -385,5 +385,14 @@
     "idleSeconds": 607.286,
     "measuredAt": "2026-11-09T00:04:20.987Z",
     "note": "Direct Cosmos requests from a new local Node process after >=10 min; not the full Trazo startup or a 60-minute idle test"
+  },
+  "cleanup": {
+    "confirmedAt": "2026-11-09T00:20:07.131Z",
+    "resourceGroup": "rg-trazo-cosmos-spike-20261108",
+    "resourceGroupExists": false,
+    "temporaryAccountRemoved": true,
+    "productionRevision": "trazo-mvp--20260927212107",
+    "productionSqlFree": true,
+    "providerRegistration": "Microsoft.DocumentDB remains registered; no account is retained by this experiment"
   }
 }

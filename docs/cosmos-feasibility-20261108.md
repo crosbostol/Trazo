@@ -168,13 +168,46 @@ suscripción. No se creó ninguna cuenta provisionada para esta evaluación.
 
 ## Decisión propuesta
 
-La prueba favorece continuar con un prototipo .NET sobre Cosmos: las consultas y
-la conservación del payload pequeño son viables y el consumo observado es bajo.
+La prueba muestra viabilidad para un prototipo .NET sobre Cosmos: las consultas y
+la conservación del payload pequeño funcionan y el consumo observado es bajo.
 El SQL actual ya cuesta cero dentro de su oferta; el motivo del cambio sería
-reducir la espera de reanudación. El ahorro total adicional merece revisar ACR.
+reducir la espera de reanudación. El ahorro fijo adicional está en revisar ACR.
+
+Conviene comparar estos subtotales antes de elegir la migración. No incluyen
+Container Apps, transferencia, impuestos ni extras:
+
+| Combinación | DB + registro, USD/mes aproximados | Trabajo principal |
+| --- | ---: | --- |
+| Actual: SQL Free + ACR Basic | 5,07 | Conserva la espera SQL observada |
+| SQL Basic + GHCR | 4,90 | Cambiar tier/registro y probar; mantiene el backend SQL |
+| Cosmos Serverless + GHCR | 0,014 antes de índices | Migrar backend, datos, claves y respaldo |
+| Cosmos Free Tier elegible + GHCR, dentro de límites | 0 | Misma migración; confirmar la oferta y límites |
+
+SQL Basic es cómputo provisionado: evita la auto-pausa serverless, aunque no
+elimina el cold start de ACA. Tiene 5 DTU y máximo 2 GB; habría que comprobar tamaño,
+compatibilidad y rendimiento antes de convertir la base de 32 GB configurados.
+La tarifa de Basic se incluye como alternativa que podría financiarse con el
+ahorro de ACR, no como un cambio ya autorizado o ejecutado.
+[Límites DTU](https://learn.microsoft.com/azure/azure-sql/database/service-tiers-dtu).
 
 Antes de migrar: confirmar elegibilidad/configuración de Cosmos Free Tier; portar
 servicios y claves DataProtection conservando el key ring; definir payloads grandes;
 validar restauración y migración en una copia; desplegar un candidato aislado en
 ACA y medir su arranque completo tras inactividad. Esta prueba no incluye cambiar
 el tráfico de producción.
+
+## Cierre y evidencia
+
+El 08-11-2026 a las 21:19 America/Santiago se confirmó que el grupo temporal
+`rg-trazo-cosmos-spike-20261108` ya no existe. Su única cuenta Cosmos y sus datos
+ficticios fueron eliminados. La eliminación se había solicitado a las 21:04 y se
+esperó la confirmación efectiva; no se dejó una cuenta de prueba activa.
+`Microsoft.DocumentDB` permanece registrado en la suscripción; el experimento no
+conserva recursos Cosmos. Producción conserva imagen/revisión, escala 0–1 y SQL
+Free con AutoPause de 60 minutos, comprobados mediante Management sin despertar
+la base al terminar.
+
+- [Resultados sin secretos](../experiments/cosmos-spike/results/2026-11-08-results.json).
+- [Medidores y estimación de costos](../experiments/cosmos-spike/results/2026-11-08-prices.json).
+- Código y resultados en la rama `codex/cosmos-spike`; `main` y el tag `v0.1.0`
+  conservan el checkpoint anterior al experimento.
