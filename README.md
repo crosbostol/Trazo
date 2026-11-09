@@ -273,3 +273,7 @@ en la medición del 08-11-2026. Se preparó una prueba separada de Cosmos con da
 ficticios, sin cambiar el provider ni el deployment de Trazo. Resultados, costos,
 límites y pasos pendientes en [el informe de viabilidad](docs/cosmos-feasibility-20261108.md);
 instrucciones reproducibles en [experiments/cosmos-spike](experiments/cosmos-spike/README.md).
+
+La ruta elegida para acercarse a costo cero es Cosmos Free Tier + GHCR + ACA
+Consumption con escala a cero. [Plan, límites y validación de infraestructura](docs/near-zero-plan.md).
+Todavía no se ha migrado producción.

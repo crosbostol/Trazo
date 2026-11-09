@@ -1,0 +1,15 @@
+{
+  "checkedAt": "2026-11-09T00:59:37.502Z",
+  "localDate": "2026-11-08",
+  "action": "az deployment group validate",
+  "templateSha256": "066c9eda94bcc91ed41e2cc596b5af3c34f06501c36084454598288c15e7e501",
+  "state": "Succeeded",
+  "error": null,
+  "resourcesCreated": false,
+  "cosmosAccountsAfterValidation": 0,
+  "notes": [
+    "Validation is not a deployment or an offer reservation.",
+    "No production revision, database, registry or traffic was changed.",
+    "Validation used a documentation-only firewall address. Actual app identity, RBAC and egress rules still need implementation."
+  ]
+}

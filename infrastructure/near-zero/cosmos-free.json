@@ -1,0 +1,77 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "accountName": {
+      "type": "string",
+      "minLength": 3,
+      "maxLength": 44,
+      "metadata": { "description": "New Cosmos NoSQL account; never update an existing production account with this template." }
+    },
+    "location": { "type": "string", "allowedValues": ["centralus"], "defaultValue": "centralus" },
+    "allowedIpRules": {
+      "type": "array",
+      "minLength": 1,
+      "metadata": { "description": "Explicit ipAddressOrRange objects for the application egress and migration workstation. Empty rules would expose the public endpoint, so they are forbidden." }
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.DocumentDB/databaseAccounts",
+      "apiVersion": "2024-11-15",
+      "name": "[parameters('accountName')]",
+      "location": "[parameters('location')]",
+      "kind": "GlobalDocumentDB",
+      "tags": { "trazo": "near-zero-candidate" },
+      "properties": {
+        "databaseAccountOfferType": "Standard",
+        "enableFreeTier": true,
+        "capacity": { "totalThroughputLimit": 1000 },
+        "consistencyPolicy": { "defaultConsistencyLevel": "Session" },
+        "locations": [{ "locationName": "[parameters('location')]", "failoverPriority": 0, "isZoneRedundant": false }],
+        "enableAutomaticFailover": false,
+        "enableMultipleWriteLocations": false,
+        "publicNetworkAccess": "Enabled",
+        "ipRules": "[parameters('allowedIpRules')]",
+        "networkAclBypass": "None",
+        "disableLocalAuth": true,
+        "minimalTlsVersion": "Tls12",
+        "backupPolicy": { "type": "Continuous", "continuousModeProperties": { "tier": "Continuous7Days" } }
+      }
+    },
+    {
+      "type": "Microsoft.DocumentDB/databaseAccounts/sqlDatabases",
+      "apiVersion": "2024-11-15",
+      "name": "[format('{0}/trazo', parameters('accountName'))]",
+      "dependsOn": ["[resourceId('Microsoft.DocumentDB/databaseAccounts', parameters('accountName'))]"],
+      "properties": { "resource": { "id": "trazo" }, "options": {} }
+    },
+    {
+      "type": "Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers",
+      "apiVersion": "2024-11-15",
+      "name": "[format('{0}/trazo/records', parameters('accountName'))]",
+      "dependsOn": ["[resourceId('Microsoft.DocumentDB/databaseAccounts/sqlDatabases', parameters('accountName'), 'trazo')]"],
+      "properties": {
+        "resource": {
+          "id": "records",
+          "partitionKey": { "paths": ["/ownerId"], "kind": "Hash", "version": 2 },
+          "indexingPolicy": {
+            "automatic": true,
+            "indexingMode": "consistent",
+            "includedPaths": [{ "path": "/*" }],
+            "excludedPaths": [{ "path": "/rawPayloadJson/?" }, { "path": "/xml/?" }, { "path": "/\"_etag\"/?" }],
+            "compositeIndexes": [[
+              { "path": "/date", "order": "descending" },
+              { "path": "/createdAt", "order": "descending" },
+              { "path": "/id", "order": "descending" }
+            ]]
+          }
+        },
+        "options": { "throughput": 400 }
+      }
+    }
+  ],
+  "outputs": {
+    "endpoint": { "type": "string", "value": "[reference(resourceId('Microsoft.DocumentDB/databaseAccounts', parameters('accountName')), '2024-11-15').documentEndpoint]" }
+  }
+}
