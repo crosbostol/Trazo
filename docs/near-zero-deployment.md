@@ -8,14 +8,22 @@ URL: https://trazo-mvp.agreeableisland-910dddf7.centralus.azurecontainerapps.io
 
 ## Vigencia y versiones
 
-Revisión documental del 12-11-2026 sobre evidencia del 08-11-2026. No se redeplegó la aplicación por esta actualización. Para navegar por guías actuales e informes históricos, usa el [índice](README.md).
+Actualizado con el despliegue del 12-11-2026. Las mediciones de latencia y estimaciones de costos conservan su fecha original del 08-11-2026. Para navegar por guías actuales e informes históricos, usa el [índice](README.md).
 
-El [release v0.2.0](https://github.com/crosbostol/Trazo/releases/tag/v0.2.0) apunta a `9e343e0a36f2ba63f786cb16ae349495c47d640d`. Su workflow [verificado](https://github.com/crosbostol/Trazo/actions/runs/42548981288) publicó la imagen `ghcr.io/crosbostol/trazo@sha256:aac214edf8a2abd0187a358b85f87927c41e069cfe0c4b69d66156cbc7611e45`. Esa imagen está disponible y **no fue desplegada**: la imagen registrada como activa sigue siendo la indicada abajo, compilada desde `53a3c2a`. Los cambios posteriores incluyen herramientas de preservación exacta de payload, pruebas y documentación.
+El [release v0.2.0](https://github.com/crosbostol/Trazo/releases/tag/v0.2.0) apunta a `9e343e0a36f2ba63f786cb16ae349495c47d640d`. Su workflow [verificado](https://github.com/crosbostol/Trazo/actions/runs/42548981288) publicó la imagen `ghcr.io/crosbostol/trazo@sha256:aac214edf8a2abd0187a358b85f87927c41e069cfe0c4b69d66156cbc7611e45`. La imagen de v0.2.0 no se desplegó; la imagen anterior de producción se compiló desde `53a3c2a`. Los cambios posteriores incluyen herramientas de preservación exacta de payload, pruebas y documentación.
+
+## Despliegue del 12-11-2026
+
+Se desplegó el commit `e5e7e445bf25915a186df7e3ffbd93a5eed9f979`, que añade **Copiar JSON para importar** al detalle de actividad. El [pipeline](https://github.com/crosbostol/Trazo/actions/runs/43331652321) terminó correctamente, incluyendo build, codecs Cosmos, lint y smoke SQL con exportación/reimportación sin pérdida de precisión.
+
+La revisión `trazo-mvp--bw49zfv` quedó Healthy, con una réplica y 100 % del tráfico. Se actualizó solo la imagen mediante el helper por digest; se conservaron Cosmos, identidad, secretos, recursos y escala mínimo/máximo 1. Verificación pública: HTML y readiness 200, sesión anónima 200, dashboard anónimo 401 y bundle JavaScript con el botón nuevo. El portapapeles se comprobó antes del despliegue en navegador local con datos simulados, tamaños 1280/390 y permiso denegado; no se importaron duplicados en producción.
+
+Imagen anterior conservada para revertir esta actualización manteniendo Cosmos: `ghcr.io/crosbostol/trazo@sha256:047eff8311e957c1664db0124790bc6173cec2b449417fdefc531af7308b704a`.
 
 ## Configuración
 
 - ACA `trazo-mvp`, Central US, Consumption, 0,25 CPU/0,5 GiB, mínimo 1 y máximo 1 réplica.
-- Revisión actual `trazo-mvp--always-ready-20261108`. Readiness cada 2 segundos,
+- Revisión actual `trazo-mvp--bw49zfv`. Readiness cada 2 segundos,
   inicio inmediato y una confirmación; liveness conserva su configuración previa.
 - Provider `Database__Provider=Cosmos`; modo de solo lectura desactivado después
   de la migración. Inicialización y seed siguen desactivados en Production.
@@ -28,8 +36,8 @@ El [release v0.2.0](https://github.com/crosbostol/Trazo/releases/tag/v0.2.0) apu
 - Backup `Continuous7Days`; almacenar el backup no tiene cargo, restaurar sí puede
   tenerlo. La restauración PITR de Azure no se invocó en esta migración.
 - Imagen pública e inmutable:
-  `ghcr.io/crosbostol/trazo@sha256:047eff8311e957c1664db0124790bc6173cec2b449417fdefc531af7308b704a`.
-  Código de aplicación compilado del commit `53a3c2aebb148bb912f1e1e19671905e59d75842`.
+  `ghcr.io/crosbostol/trazo@sha256:44da9772ab06f9f6b102d9129a10adecc6697b82c940ddf4494c50ef9d7cee2a`.
+  Código de aplicación compilado del commit `e5e7e445bf25915a186df7e3ffbd93a5eed9f979`.
 - La imagen **original**, copiada sin recompilar y con el mismo digest anterior:
   `ghcr.io/crosbostol/trazo@sha256:fe03fbef4faa414655af0f81a2731115fcf17224684282d03eef8c9be5caaab4`.
   El tag de consulta es `original-20260927212107`.

@@ -1,6 +1,6 @@
 # Documentación de Trazo
 
-Revisión documental: 12-11-2026. Los valores de infraestructura y las mediciones registrados corresponden a la verificación del 08-11-2026; esta actualización de documentación no despliega ni modifica recursos.
+Revisión documental: 12-11-2026. La guía de producción registra el despliegue del botón de copia del 12-11-2026; las mediciones de latencia y costos conservan la fecha del 08-11-2026.
 
 ## Guías vigentes
 
@@ -21,7 +21,7 @@ El JSON de importación conserva el contrato de `POST /api/activities`. Cambiar 
 
 [v0.1.0](https://github.com/crosbostol/Trazo/releases/tag/v0.1.0) conserva el checkpoint anterior a Cosmos. [v0.2.0](https://github.com/crosbostol/Trazo/releases/tag/v0.2.0) apunta al commit `9e343e0a36f2ba63f786cb16ae349495c47d640d` e incluye bundle Git, manifiesto y checksums. Estos bundles son respaldo de código, no de los datos personales.
 
-La imagen desplegada registrada fue compilada desde `53a3c2aebb148bb912f1e1e19671905e59d75842`. El release incluye cambios posteriores de herramientas, pruebas y documentación; su imagen construida no se desplegó automáticamente. La guía de producción identifica ambos digests. Los commits de documentación posteriores al tag no cambian el release existente.
+La imagen actual se compiló desde `e5e7e445bf25915a186df7e3ffbd93a5eed9f979` y se desplegó el 12-11-2026. La imagen del release v0.2.0 no se desplegó automáticamente. La [guía de producción](near-zero-deployment.md) registra los digests actual y anterior, revisión, pruebas y condiciones de rollback. Los commits posteriores al tag no cambian el release existente.
 
 ## Informes históricos
 
