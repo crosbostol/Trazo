@@ -52,3 +52,10 @@ Los tests automáticos de `import-checks.mjs`, invocados desde `api-smoke.mjs`,
 cubren además Strength efectivo, nulls, dominio inválido, JSONB no representable,
 precisión después de leer, actualización de series y eliminación con cascadas.
 La confirmación de eliminación existente no se modificó.
+
+
+## Copiar una actividad para importar
+
+En un entorno de prueba HTTPS o localhost, abre el detalle y pulsa **Copiar JSON para importar**. No debe abrirse una vista de JSON: debe anunciar copia exitosa. Pega el portapapeles en Importar y valida métricas, vueltas/sets, sensaciones y payload. Los IDs de respuesta no deben estar en el request; una nueva importación crea otra actividad. No confirmar duplicados en producción.
+
+Repetir en escritorio y teléfono. Denegar el permiso de portapapeles debe mostrar un error y permitir reintentar. Verificar también una actividad sin payload y números de payload mayores al rango seguro de JavaScript. Las caminatas antiguas sin detalles deben incluir `walking: {}`.

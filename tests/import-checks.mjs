@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict'
+import { exportActivityJson } from '../frontend/src/exportActivity.ts'
 import { field, formatActivityJson, updateSubjective, validateActivityJson } from '../frontend/src/importActivity.ts'
 
 export async function checkImport(request, today) {
@@ -35,6 +36,20 @@ export async function checkImport(request, today) {
 
   const imported = await request('/api/activities', 'POST', body, 201)
   const read = await request(`/api/activities/${imported.id}`)
+  const exported = exportActivityJson(read)
+  assert.equal(JSON.parse(exported).id, undefined)
+  assert.equal(JSON.parse(exported).running.activityId, undefined)
+  assert.match(exported, /9007199254740993/)
+  assert.match(exported, /1e400/)
+  assert.match(exported, /1\.234567890123456789/)
+  validateActivityJson(exported)
+  const roundTrip = await request('/api/activities', 'POST', exported, 201)
+  assert.notEqual(roundTrip.id, read.id)
+  const roundTripRead = await request(`/api/activities/${roundTrip.id}`)
+  assert.equal(roundTripRead.rawPayloadJson, read.rawPayloadJson)
+  assert.equal(roundTripRead.durationSeconds, read.durationSeconds)
+  assert.equal(roundTripRead.mood, read.mood)
+  await request(`/api/activities/${roundTrip.id}`, 'DELETE', undefined, 204)
   assert.equal(read.mood, 4)
   assert.equal(read.energy, 3)
   assert.equal(read.rpe, 6)

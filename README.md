@@ -223,6 +223,8 @@ Ejemplo de fuerza:
 6. Pulsa **Importar actividad**, revisa el destino y luego **Confirmar y guardar**. Solo esta última acción envía el POST. Si la API rechaza los datos, verás los errores y conservarás el texto para corregirlo.
 7. Se abre el detalle de la actividad guardada. Al entrar a Actividades y Resumen se consultan datos nuevos; el registro aparece en listado y gráficos según sus métricas y fecha. Las actividades futuras no cuentan en el dashboard, como antes. Puedes eliminarlo desde el detalle con la confirmación existente.
 
+En el detalle de cualquier actividad, **Copiar JSON para importar** genera el contrato completo y lo copia directamente al portapapeles, sin abrir una vista de JSON. Incluye métricas, vueltas, sets, notas, sensaciones y el texto exacto de `rawPayload`; omite IDs generados por el servidor. Funciona desde el botón en PC y celular, con aviso de éxito o de permiso denegado. Requiere HTTPS o localhost. Reconstruye el request desde los datos guardados: no recupera el formato ni campos desconocidos del JSON pegado originalmente. Las caminatas antiguas sin detalles se exportan con `walking: {}`.
+
 La importación no deduplica sesiones ni incorpora sincronización. Si hay un corte de conexión después de confirmar, revisa Actividades antes de reintentar: el servidor podría haber guardado la actividad. No pegues nuevamente una actividad ya registrada.
 
 ## Progreso de fuerza

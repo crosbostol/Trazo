@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, ArrowUpRight, Trash2 } from "lucide-react";
+import { ArrowLeft, ArrowUpRight, Copy, Trash2 } from "lucide-react";
+import { exportActivityJson } from "../exportActivity";
+import { copyText } from "../clipboard";
 import { api } from "../api";
 import { useApi } from "../useApi";
 import type { Activity } from "../types";
@@ -20,6 +22,23 @@ export default function ActivityDetailPage() {
   const [confirming, setConfirming] = useState(false);
   const [busy, setBusy] = useState(false);
   const [deleteError, setDeleteError] = useState("");
+  const [copyStatus, setCopyStatus] = useState("");
+  const [copying, setCopying] = useState(false);
+  async function copyActivity() {
+    if (!a) return;
+    setCopying(true);
+    setCopyStatus("");
+    try {
+      await copyText(exportActivityJson(a));
+      setCopyStatus("JSON copiado al portapapeles.");
+    } catch {
+      setCopyStatus(
+        "No se pudo copiar. Revisa el permiso del portapapeles y vuelve a intentarlo.",
+      );
+    } finally {
+      setCopying(false);
+    }
+  }
   async function remove() {
     setBusy(true);
     try {
@@ -223,6 +242,19 @@ export default function ActivityDetailPage() {
           )}
         </section>
       )}
+      <section className="panel">
+        <SectionHeading
+          title="JSON de la actividad"
+          subtitle="Copia esta actividad en el formato de Importar, incluido su payload original."
+        />
+        <button type="button" onClick={copyActivity} disabled={copying}>
+          <Copy size={16} aria-hidden="true" />
+          {copying ? "Copiando…" : "Copiar JSON para importar"}
+        </button>
+        <p role="status" aria-live="polite">
+          {copyStatus}
+        </p>
+      </section>
       {a.rawPayload != null && (
         <details className="panel raw">
           <summary>Payload original</summary>
