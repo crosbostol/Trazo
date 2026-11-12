@@ -1,0 +1,159 @@
+/* Exclusive to concept.html; no production import. */
+.ink-concept {
+  --background: #0c1111;
+  --surface: rgba(18, 26, 25, 0.84);
+  --surface-input: rgba(12, 19, 18, 0.94);
+  --surface-raised: #263b33;
+  --surface-hover: #304c40;
+  --border: rgba(173, 198, 179, 0.14);
+  --accent: #c4d9ac;
+  --accent-hover: #d7e9c2;
+  --text: #e8eee8;
+  --text-muted: #9caaa1;
+  --highlight: rgba(168, 195, 158, 0.09);
+}
+.ink-backdrop {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: -1;
+  background:
+    radial-gradient(ellipse at 90% 20%, #1b302b88, transparent 65%), #0c1111;
+}
+.ink-backdrop svg {
+  width: 100%;
+  height: 100%;
+  opacity: 0.85;
+}
+.ink-flow {
+  transform-origin: center;
+  animation: ink-drift 28s ease-in-out infinite alternate;
+}
+@keyframes ink-drift {
+  from {
+    transform: translate(-2%, 1%) rotate(-4deg) scale(1.05);
+  }
+  to {
+    transform: translate(3%, -3%) rotate(5deg) scale(1.16);
+  }
+}
+.ink-concept .sidebar {
+  backdrop-filter: blur(16px);
+}
+.ink-concept .topbar {
+  background: #0e16144d;
+}
+.ink-concept main {
+  max-width: 1200px;
+  padding-top: 48px;
+}
+.ink-concept .page-title {
+  margin: 18px 0 38px;
+}
+.ink-concept h1 {
+  font-size: clamp(32px, 4vw, 48px);
+  font-weight: 500;
+  letter-spacing: -1.8px;
+}
+.ink-concept .panel {
+  border-radius: 18px;
+  box-shadow: 0 12px 44px #00000018;
+  backdrop-filter: blur(12px);
+}
+.ink-concept .section-heading {
+  padding-top: 28px;
+  padding-bottom: 22px;
+}
+.ink-concept .section-heading h2 {
+  font-weight: 500;
+}
+.ink-concept .metric-grid > div {
+  border-color: var(--border);
+  padding-top: 25px;
+  padding-bottom: 27px;
+}
+.ink-concept .metric-grid strong {
+  font-size: 25px;
+  font-weight: 400;
+}
+.ink-concept .activity-export {
+  padding: 28px;
+  background: linear-gradient(115deg, #24372dd9, #15211fe8);
+}
+.ink-concept .activity-export .section-heading {
+  padding: 0;
+}
+.ink-concept .activity-export button {
+  border-radius: 10px;
+  background: #c4d9ac;
+  color: #18231c;
+  border-color: transparent;
+  padding: 14px 20px;
+}
+.ink-concept .activity-export button:hover {
+  background: #d7e9c2;
+}
+.ink-concept .raw {
+  background: #111b18a6;
+}
+.ink-concept .delete-area {
+  padding: 12px 4px;
+}
+.concept-label {
+  position: fixed;
+  right: 18px;
+  bottom: 12px;
+  font-size: 9px;
+  letter-spacing: 1.4px;
+  color: #a0b49c;
+  z-index: 20;
+  background: #101b17e6;
+  padding: 9px 12px;
+  border: 1px solid #ffffff12;
+  border-radius: 30px;
+}
+@media (max-width: 700px) {
+  .ink-concept main {
+    padding: 28px 18px 0;
+  }
+  .ink-concept .activity-export {
+    padding: 24px 22px;
+  }
+  .ink-concept .page-title {
+    margin-bottom: 28px;
+  }
+  .ink-concept .panel {
+    border-radius: 15px;
+  }
+  .concept-label {
+    bottom: 76px;
+    font-size: 8px;
+    right: 12px;
+  }
+  .ink-backdrop svg {
+    width: 180%;
+    margin-left: -60%;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ink-flow {
+    animation: none;
+  }
+}
+
+.ink-backdrop::before {
+  content: "";
+  position: absolute;
+  inset: -15%;
+  background:
+    radial-gradient(ellipse at 74% 34%, #50796a30, transparent 27%),
+    radial-gradient(ellipse at 46% 72%, #6b806e20, transparent 35%);
+  filter: blur(36px);
+  animation: ink-drift 32s ease-in-out infinite alternate-reverse;
+}
+@media (prefers-reduced-motion: reduce) {
+  .ink-backdrop::before {
+    animation: none;
+  }
+}

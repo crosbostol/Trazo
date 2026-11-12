@@ -242,16 +242,16 @@ export default function ActivityDetailPage() {
           )}
         </section>
       )}
-      <section className="panel">
+      <section className="panel activity-export">
         <SectionHeading
           title="JSON de la actividad"
-          subtitle="Copia esta actividad en el formato de Importar, incluido su payload original."
+          subtitle="Tu registro completo, listo para volver a importar."
         />
         <button type="button" onClick={copyActivity} disabled={copying}>
           <Copy size={16} aria-hidden="true" />
           {copying ? "Copiando…" : "Copiar JSON para importar"}
         </button>
-        <p role="status" aria-live="polite">
+        <p className="copy-status" role="status" aria-live="polite">
           {copyStatus}
         </p>
       </section>
