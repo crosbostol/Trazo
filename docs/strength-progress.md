@@ -1,4 +1,4 @@
-# Progreso de fuerza — iteración local
+# Progreso de fuerza
 
 Disponible en `/progress`, desde **Progreso** en la navegación. El selector muestra ejercicios por fecha de actividad más reciente. La página ofrece cuatro PRs, un gráfico «Mejor peso por sesión» y el historial cronológico con enlaces al detalle. No requiere migración, catálogo, backfill ni cambios en los datos existentes.
 
@@ -31,6 +31,10 @@ La serie contiene el máximo peso conocido por Activity o null; no conecta hueco
 Se conservan los tipos numéricos actuales (double). Un producto o suma que desborde el rango finito de double se devuelve como null, no Infinity ni cero, para mantener JSON válido; no se imponen topes deportivos nuevos.
 
 ## Implementación y pruebas
+
+Disponible en producción con Cosmos desde el 08-11-2026. `CosmosStrengthProgressService.cs` y `CosmosApiEndpoints.cs` implementan los mismos contratos que el provider SQL. Ambos preservan trim + `OrdinalIgnoreCase` en .NET y el orden de desempate; Cosmos consulta metadatos y los sets del grupo seleccionado. El smoke Cosmos reutiliza las comprobaciones HTTP de fuerza, omitiendo únicamente checks directos de SQL; sus requisitos están en el [README](../README.md#pruebas-cosmos).
+
+La explicación SQL y los resultados locales del 27-09-2026 que siguen corresponden a la implementación inicial.
 
 `backend/Services/StrengthProgressService.cs` realiza una consulta de metadatos de ejercicios y una consulta de sets del grupo seleccionado; no hay N+1 ni envío de rawPayload/actividades completas. La comparación en .NET evita que la collation SQL agrupe nombres más agresivamente. Los PRs se recalculan al consultar: futuras ediciones y las eliminaciones actuales no necesitan invalidar un caché persistente.
 

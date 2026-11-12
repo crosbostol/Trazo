@@ -3,8 +3,8 @@
 > Implementado en producción el 08-11-2026. Este documento conserva el plan original; el estado efectivo está en [near-zero-deployment.md](near-zero-deployment.md).
 
 Actualizado el 08-11-2026. Objetivo: reducir cargos fijos y evitar la reanudación
-de SQL Serverless. La configuración de producción sigue intacta; este documento
-y la plantilla son preparación, no una migración completada.
+de SQL Serverless. En esa etapa previa, producción seguía intacta y la plantilla era preparación.
+El plan original que sigue incluye escala a cero; la decisión final fue mínimo una réplica, documentada en la guía vigente.
 
 ## Arquitectura candidata
 

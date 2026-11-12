@@ -1,5 +1,7 @@
 # Cosmos DB: prueba de viabilidad del 8 de noviembre de 2026
 
+> Documento histórico: conserva decisiones, mediciones y resultados de su etapa original. No describe la producción actual ni autoriza repetir el provisioning o deployment. Consulta el [estado vigente](near-zero-deployment.md) y el [índice de documentación](README.md).
+
 Prueba autorizada con datos ficticios. La aplicación de producción continúa usando
 SQL Server/Azure SQL y la revisión `trazo-mvp--20260927212107`. No se migraron,
 leyeron ni modificaron entrenamientos reales durante el experimento.

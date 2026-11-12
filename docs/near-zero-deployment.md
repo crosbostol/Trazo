@@ -6,6 +6,12 @@ por defecto y la suite SQL se conserva.
 
 URL: https://trazo-mvp.agreeableisland-910dddf7.centralus.azurecontainerapps.io
 
+## Vigencia y versiones
+
+Revisión documental del 12-11-2026 sobre evidencia del 08-11-2026. No se redeplegó la aplicación por esta actualización. Para navegar por guías actuales e informes históricos, usa el [índice](README.md).
+
+El [release v0.2.0](https://github.com/crosbostol/Trazo/releases/tag/v0.2.0) apunta a `9e343e0a36f2ba63f786cb16ae349495c47d640d`. Su workflow [verificado](https://github.com/crosbostol/Trazo/actions/runs/42548981288) publicó la imagen `ghcr.io/crosbostol/trazo@sha256:aac214edf8a2abd0187a358b85f87927c41e069cfe0c4b69d66156cbc7611e45`. Esa imagen está disponible y **no fue desplegada**: la imagen registrada como activa sigue siendo la indicada abajo, compilada desde `53a3c2a`. Los cambios posteriores incluyen herramientas de preservación exacta de payload, pruebas y documentación.
+
 ## Configuración
 
 - ACA `trazo-mvp`, Central US, Consumption, 0,25 CPU/0,5 GiB, mínimo 1 y máximo 1 réplica.
@@ -39,7 +45,7 @@ respondió en 0,537 s (segunda petición 0,422 s), sesión anónima en 0,150 s y
 en 0,139 s. El dashboard anónimo mantuvo 401. Estas mediciones no incluyen el render
 del navegador ni garantizan disponibilidad ante reinicios de plataforma.
 
-Estimación de cómputo para 730 horas/mes en reposo con esta asignación: unos USD
+Estimación del 08-11-2026 de cómputo para 730 horas/mes en reposo con esta asignación: unos USD
 4,29 si las cuotas gratuitas están disponibles, o USD 5,91 sin ellas. El tiempo
 activo se cobra a su tarifa correspondiente y puede elevar ese costo. Es una
 estimación, no un límite de factura. La memoria y vCPU idle consultadas en Central
@@ -148,8 +154,8 @@ histórico ya facturado de ACR no desaparece de la factura al eliminar el recurs
 
 ## Actualizaciones y rollback
 
-El workflow `.github/workflows/container.yml` compila, ejecuta regresiones SQL y
-publica una imagen GHCR por commit. No despliega automáticamente ni cambia secretos.
+El workflow `.github/workflows/container.yml` compila, ejecuta regresiones de codecs Cosmos y el smoke SQL, y
+publica una imagen GHCR cuando un push a main afecta sus rutas configuradas (backend, frontend, tests, Dockerfile o workflow), o por ejecución manual. La integración cloud Cosmos se ejecuta por separado, no en CI. No despliega automáticamente ni cambia secretos.
 Para revisar o aplicar una imagen por digest conservando la configuración Cosmos:
 
 ```powershell

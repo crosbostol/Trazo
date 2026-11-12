@@ -1,5 +1,7 @@
 > Actualización: el usuario autorizó autoPauseDelay=60. Provisioning reanudado con Free + AutoPause; los rechazos de 15 minutos se conservan abajo como registro histórico.
 
+> Documento histórico: conserva decisiones, mediciones y resultados de su etapa original. No describe la producción actual ni autoriza repetir el provisioning o deployment. Consulta el [estado vigente](near-zero-deployment.md) y el [índice de documentación](README.md).
+
 # Deployment manual de Trazo con Azure SQL Free
 
 Estado real y pendientes: [azure-deployment-status.md](azure-deployment-status.md). Diferencias del provider y pruebas: [sql-server-migration.md](sql-server-migration.md). El procedimiento PostgreSQL anterior queda archivado en `docs/legacy/azure-deployment-postgresql.md`; no ejecutarlo con el código nuevo.

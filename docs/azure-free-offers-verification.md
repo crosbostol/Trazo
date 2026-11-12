@@ -1,5 +1,7 @@
 # Verificación de ofertas gratuitas — 26-09-2026
 
+> Documento histórico: conserva decisiones, mediciones y resultados de su etapa original. No describe la producción actual ni autoriza repetir el provisioning o deployment. Consulta el [estado vigente](near-zero-deployment.md) y el [índice de documentación](README.md).
+
 **Actualización posterior autorizada:** Microsoft.Sql se registró y se confirmó
 General Purpose Serverless con AutoPause gratuito y un cupo libre en Central US.
 Ver [comprobación operativa SQL](azure-sql-free-operational-check.md).

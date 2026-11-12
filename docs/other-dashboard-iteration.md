@@ -1,5 +1,7 @@
 # Iteración local: otros deportes y períodos del resumen
 
+> Documento histórico: conserva decisiones, mediciones y resultados de su etapa original. No describe la producción actual ni autoriza repetir el provisioning o deployment. Consulta el [estado vigente](near-zero-deployment.md) y el [índice de documentación](README.md).
+
 Implementada el 27 de septiembre de 2026. No se ejecutó ningún comando Azure,
 despliegue ni migración de Production. Las pruebas usan bases SQL locales
 `progress_test_<timestamp>` independientes y las eliminan al finalizar.
@@ -46,11 +48,11 @@ el borde inferior del viewport original, no en el fondo de toda la página.
 
 Evidencia generada en `artifacts/dashboard-iteration/`:
 
-- [Desktop amplio](../artifacts/dashboard-iteration/wide.png)
-- [Desktop](../artifacts/dashboard-iteration/desktop.png)
-- [Tablet](../artifacts/dashboard-iteration/tablet.png)
-- [Móvil](../artifacts/dashboard-iteration/mobile.png)
-- [Colores, anchos y resultados](../artifacts/dashboard-iteration/responsive.json)
+- Desktop amplio (`../artifacts/dashboard-iteration/wide.png`, artefacto local no incluido en Git)
+- Desktop (`../artifacts/dashboard-iteration/desktop.png`, artefacto local no incluido en Git)
+- Tablet (`../artifacts/dashboard-iteration/tablet.png`, artefacto local no incluido en Git)
+- Móvil (`../artifacts/dashboard-iteration/mobile.png`, artefacto local no incluido en Git)
+- Colores, anchos y resultados (`../artifacts/dashboard-iteration/responsive.json`, artefacto local no incluido en Git)
 
 ## Pruebas
 

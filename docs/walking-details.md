@@ -1,6 +1,6 @@
-# WalkingDetails · iteración local
+# WalkingDetails
 
-Implementado y probado el 27 de septiembre de 2026, sin acciones Azure ni deployment.
+La descripción de modelo relacional y pruebas que sigue corresponde a la iteración local del 27-09-2026. AddWalkingDetails se aplicó al SQL de Azure ese día. Desde el 08-11-2026 producción usa Cosmos: walking forma parte del agregado de actividad, con las mismas reglas de API y sin FK ni migraciones EF. Consulta el [estado vigente](near-zero-deployment.md).
 El bloque enviado por el usuario se admite dentro de POST /api/activities:
 [JSON completo listo para /import](walking-activity.example.json).
 Ajusta date al día real del entrenamiento.
@@ -89,5 +89,5 @@ de escritura antes de confirmar, creación manual con pasos, ausencia de
 laps/potencia y eliminación confirmada. Solo usa bases locales desechables.
 
 Capturas:
-[preview móvil](../artifacts/dashboard-iteration/walking-import-mobile.png) y
-[detalle móvil](../artifacts/dashboard-iteration/walking-detail-mobile.png).
+preview móvil (`../artifacts/dashboard-iteration/walking-import-mobile.png`, artefacto local no incluido en Git) y
+detalle móvil (`../artifacts/dashboard-iteration/walking-detail-mobile.png`, artefacto local no incluido en Git).

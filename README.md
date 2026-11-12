@@ -2,6 +2,8 @@
 
 MVP para registrar running, fuerza, caminatas, ciclismo, hiking, otros deportes y mediciones corporales. React + TypeScript + Vite y ASP.NET Core 10. Desarrollo local con EF Core/SQL Server; **producción migrada el 08-11-2026 a Cosmos DB Free Tier + GHCR + Container Apps Consumption, con una réplica siempre encendida por elección del usuario**. Se conservaron datos, claves de sesión, SQL y el checkpoint anterior para rollback. ACR fue retirado después de preservar su imagen original en GHCR. Estado, costos, límites y operaciones actuales en [docs/near-zero-deployment.md](docs/near-zero-deployment.md).
 
+Documentación: [índice y vigencia de las guías](docs/README.md). Código publicado: [v0.2.0](https://github.com/crosbostol/Trazo/releases/tag/v0.2.0); publicar una imagen no la despliega automáticamente.
+
 ## Ejecutar localmente
 
 Requisitos: .NET SDK 10, Node 24, Docker Desktop con contenedores Linux y unos 2 GiB libres para SQL Server 2022 Developer. El provider local predeterminado es SqlServer; producción configura `Database__Provider=Cosmos`. No conecta con PostgreSQL.
@@ -19,7 +21,7 @@ dotnet run --project backend
 
 `Use-LocalDatabase.ps1` guarda conexión/contraseña solo en variables de esta terminal. `appsettings` no contiene contraseñas. SQL local escucha exclusivamente en `127.0.0.1:1433`; `TrustServerCertificate=True` es solo para su certificado local. Azure exige validación TLS. El volumen nuevo es `trazo_sql_data`. No borres volúmenes para cambiar de base.
 
-La API escucha en http://127.0.0.1:5143. En otra terminal ejecuta `npm --prefix frontend ci` y `npm --prefix frontend run dev`; abre http://127.0.0.1:5173. Vite reenvía `/api`, sin CORS. `New-AuthSecret.ps1` pide la contraseña personal, no la de SQL, y configura el hash de login. No hay bypass de autenticación. En Production ambos secretos viven en Container Apps.
+La API escucha en http://127.0.0.1:5143. En otra terminal ejecuta `npm --prefix frontend ci` y `npm --prefix frontend run dev`; abre http://127.0.0.1:5173. Vite reenvía `/api`, sin CORS. `New-AuthSecret.ps1` pide la contraseña personal, no la de SQL, y configura el hash de login. No hay bypass de autenticación. En Production el hash de login vive en Container Apps y Cosmos usa identidad administrada; la conexión SQL conservada es solo para rollback.
 
 ### Base real y demo
 
@@ -70,9 +72,15 @@ Para detener solo SQL nuevo: `docker compose stop sqlserver`. Para tests sobre e
 │   ├── DTOs/                    # Requests de creación
 │   ├── Services/                # Validación y agregados del dashboard
 │   ├── Endpoints/               # Endpoints REST (Minimal API)
-│   ├── Migrations/              # Migración inicial y snapshot EF
+│   ├── Persistence/             # Documentos Cosmos, codecs y key ring
+│   ├── Migration/               # Exportación, importación y verificación offline
+│   ├── Migrations/              # Migraciones SQL y snapshot EF
 │   ├── Program.cs
 │   └── Progress.Api.csproj
+├── docs/README.md               # Índice de documentación vigente e histórica
+├── infrastructure/near-zero/     # Plantilla Cosmos y evidencia del despliegue
+├── tests/CosmosChecks/           # Regresiones de codecs sin servicios externos
+├── tests/cosmos-api-smoke.mjs    # Integración Cosmos en base desechable explícita
 ├── tests/api-smoke.mjs           # Integración real con SQL Server aislado
 ├── tests/import-checks.mjs       # Importación y precisión, ejecutado por api-smoke
 ├── scripts/Initialize-RealDatabase.ps1 # Creación segura con archivo explícito
@@ -83,13 +91,13 @@ Para detener solo SQL nuevo: `docker compose stop sqlserver`. Para tests sobre e
 
 ## Decisiones de diseño
 
-- **Un solo proyecto backend**, organizado por carpetas. Endpoints, validación y agregación separados sin capas de repositorios ni proyectos adicionales.
+- **Un solo proyecto backend**, organizado por carpetas. Endpoints, validación y agregación organizados por carpetas, con persistencia Cosmos independiente del DbContext SQL y utilidades de migración offline.
 - **.NET 10 y EF Core SQL Server 10.0.12**; sin Npgsql en el backend nuevo.
-- **Activity común** para todos los deportes. Relaciones uno a uno opcionales con `RunningDetails` y `WalkingDetails`; ejercicios y sets para fuerza. Las relaciones dependientes usan borrado en cascada y los órdenes/números de set tienen índices únicos.
+- **Activity común** para todos los deportes. Relaciones uno a uno opcionales con `RunningDetails` y `WalkingDetails`; ejercicios y sets para fuerza. En SQL las relaciones dependientes usan borrado en cascada y los órdenes/números de set tienen índices únicos. Cosmos guarda el agregado de actividad en documentos y aplica las reglas compartidas de la API, sin FK relacionales.
 - **Fechas de entrenamiento sin hora (`DateOnly`)**; timestamps de auditoría en UTC. El dashboard calcula hoy en `America/Santiago`, configurable con `Dashboard__TimeZone`.
 - **Duraciones en segundos**: `Activity.DurationSeconds` es el tiempo total común y coincide con `Running.TotalDurationSeconds`. La API completa este último si se omite; rechaza discrepancias. Ritmos en segundos/km, distancias en km y unidades explícitas para el resto.
 - **Sensaciones** en `Activity`: `Mood` y `Energy` de 1–5, `Rpe` de 1–10, todos opcionales; `SubjectiveNotes` separa sensaciones de las notas generales.
-- **JSON opaco en `nvarchar(max)`**, con CHECK `ISJSON(..., VALUE)`. Conserva texto, exponentes, decimales y claves duplicadas sin convertir números a double. `rawPayload` y `rawPayloadJson` conservan el contrato; el segundo evita redondeos en clientes JavaScript. Ya no se aplican los límites internos de JSONB: por ejemplo, `1e200000` y un NUL escapado pueden almacenarse como texto JSON. No se interpretan ni extraen métricas del payload. Ver [diferencias del provider](docs/sql-server-migration.md).
+- **JSON opaco**: SQL usa `nvarchar(max)` con CHECK `ISJSON(..., VALUE)`; Cosmos conserva `rawPayloadJson` como texto excluido del índice, con compresión y fragmentos cuando es necesario. Conserva texto, exponentes, decimales y claves duplicadas sin convertir números a double. `rawPayload` y `rawPayloadJson` conservan el contrato; el segundo evita redondeos en clientes JavaScript. Ya no se aplican los límites internos de JSONB: por ejemplo, `1e200000` y un NUL escapado pueden almacenarse como texto JSON. No se interpretan ni extraen métricas del payload. Ver [diferencias del provider](docs/sql-server-migration.md).
 - **Recharts** para gráficos SVG responsive, en un chunk separado. El formulario de registro se carga de forma diferida. Fuentes incluidas en el frontend.
 - **Autenticación personal por contraseña** detrás de `IPersonalAuthenticator`, cookie HttpOnly/Secure en Production, 12 horas, CSRF en escrituras y rate limit de login. Key ring persistido en Cosmos en producción y SQL en el provider local, para soportar reinicios/réplicas. Sin tabla Users ni multiusuario; evolución documentada en [docs/multi-user-roadmap.md](docs/multi-user-roadmap.md).
 - `UpdatedAt` se inicializa junto a `CreatedAt`. No hay endpoint de edición en esta iteración; al añadirlo se deberá actualizar ese timestamp.
@@ -101,7 +109,7 @@ Para detener solo SQL nuevo: `docker compose stop sqlserver`. Para tests sobre e
 - Con rango, el contrato devuelve `asOf`, `from`, `to`, `granularity`, `sessions`, `distanceKm`, `paceSecondsPerKm`, `averageHeartRate`, `series`, `activities` y `latestActivity`. `activities` son solo los últimos cinco resúmenes del período; no se descarga el historial completo al dashboard. La última actividad es global, hasta hoy, independiente del filtro.
 - Sesiones cuenta todos los tipos, incluido Other. Distancia, ritmo y FC corresponden exclusivamente a Running. Ritmo: `Σ(ritmo × distancia) / Σ(distancia)` con ambas métricas positivas. FC: promedio simple de FC media disponible por carrera; no ponderado por duración. Sin métricas válidas, ritmo/FC son `null`, no cero.
 - Hasta **31 días inclusivos**, cada punto representa un día. Desde 32 días se agrupa por semanas lunes-domingo; los extremos se recortan al rango. Cada elemento de `series` incluye `date`, `endDate`, `sessions`, `distanceKm` y `paceSecondsPerKm` ponderado. Días/semanas vacíos muestran sesiones/distancia cero y ritmo desconocido. El tooltip indica los límites del intervalo; el gráfico permite alternar kilómetros y sesiones.
-- SQL filtra y agrega por fecha; el servidor agrupa esos resultados diarios en semanas. El cliente solo presenta los agregados. No se cargan rawPayload, laps ni sets para calcularlos.
+- Cada provider (SQL o Cosmos) filtra y agrega por fecha; el servidor agrupa esos resultados diarios en semanas. El cliente solo presenta los agregados. No se cargan rawPayload, laps ni sets para calcularlos.
 - **Compatibilidad:** `/api/dashboard` sin fechas mantiene los campos y cálculos anteriores: conteo/distancia semanal, ritmo/FC/distancia de hoy−29 a hoy, `weeklyDistance` de 12 semanas y `paceHistory` por carrera. El nuevo selector utiliza siempre el contrato con rango.
 
 ### Caminatas normalizadas
@@ -136,7 +144,7 @@ Ejemplo para Importar (reemplaza la fecha si corresponde):
 }
 ```
 
-La migración `20260927053230_AddOtherActivity` agrega una columna nullable y amplía el CHECK del enum, sin cambiar las filas existentes. Se aplica automáticamente solo al iniciar Development con inicialización habilitada. **No se aplicó a Azure.** No revertirla después de guardar Other sin preparar antes los datos: el CHECK anterior no acepta ese tipo y la columna de subtipo se perdería.
+La migración `20260927053230_AddOtherActivity` agrega una columna nullable y amplía el CHECK del enum, sin cambiar las filas existentes. Se aplica automáticamente solo al iniciar Development con inicialización habilitada. Se aplicó al SQL de Azure el 27-09-2026; desde el 08-11-2026 producción usa Cosmos y no ejecuta migraciones EF. No revertirla después de guardar Other sin preparar antes los datos: el CHECK anterior no acepta ese tipo y la columna de subtipo se perdería.
 
 ## API
 
@@ -147,23 +155,25 @@ Documento **OpenAPI** disponible en desarrollo, con sesión iniciada: **http://1
 | GET | `/api/auth/session` | Estado de sesión y token CSRF; bootstrap anónimo sin datos personales |
 | POST | `/api/auth/login` | Verifica contraseña y establece cookie; requiere token CSRF |
 | POST | `/api/auth/logout` | Cierra sesión; requiere sesión y CSRF |
-| GET | `/health/live`, `/health/ready` | Salud del proceso, sin consultar DB para permitir auto-pause |
+| GET | `/health/live`, `/health/ready` | Salud del proceso sin consultar DB; no comprueba disponibilidad del almacenamiento |
 | GET | `/api/database-info` | Nombre de base activa, indicador demo y advertencia de historial previo |
 | POST | `/api/activities` | Crea actividad y sus detalles; `201` con `Location` |
 | GET | `/api/activities` | Resúmenes ordenados por fecha descendente |
 | GET | `/api/activities/{id}` | Detalle con laps/ejercicios/sets ordenados; `404` si no existe |
 | DELETE | `/api/activities/{id}` | Borra actividad y dependencias; `204` o `404` |
 | GET | `/api/dashboard` | Agregados y series temporales |
+| GET | `/api/strength/exercises` | Ejercicios agrupados del historial de fuerza |
+| GET | `/api/strength/progress?exercise=...` | Sesiones, sets, PRs y serie del ejercicio |
 | POST | `/api/body-measurements` | Crea medición; `201` |
 | GET | `/api/body-measurements` | Mediciones por fecha descendente |
 
-Todas las rutas de datos requieren sesión; las escrituras también el encabezado `X-CSRF-TOKEN`, obtenido de `/api/auth/session` y actualizado después de login. Sin sesión devuelven `401`. Con autorización y CSRF válidos, los errores de dominio/deserialización devuelven `400` Problem Details en Development y Production; no se aceptan enums numéricos. Los identificadores y timestamps se generan en el servidor. Los IDs recibidos dentro de detalles/laps se reemplazan por el ID nuevo de la actividad. Los listados no tienen paginación.
+Todas las rutas de datos requieren sesión; las escrituras también el encabezado `X-CSRF-TOKEN`, obtenido de `/api/auth/session` y actualizado después de login. Sin sesión devuelven `401`. Con autorización y CSRF válidos, los errores de dominio/deserialización devuelven `400` Problem Details en Development y Production; no se aceptan enums numéricos. Los identificadores y timestamps se generan en el servidor. Los IDs recibidos dentro de detalles/laps se reemplazan por el ID nuevo de la actividad. Los listados no tienen paginación. Cosmos devuelve `413` si los metadatos de una actividad exceden su límite conservador de 1,75 MB, independiente del payload fragmentado. En mantenimiento, `Database__ReadOnly=true` devuelve `503` y `Retry-After: 60` en escrituras de datos.
 
 Running requiere `running` (puede ser `{}` si no hay métricas disponibles); Strength requiere al menos un ejercicio y cada ejercicio al menos un set. Se validan signos, valores finitos, medias que no superen máximos, altitud mínima/máxima, calorías activas/totales, tiempos y sets coherentes. Las altitudes negativas, potencia/cadencia cero y métricas ausentes son válidas. FC y ritmos informados deben ser positivos; no se imponen límites fisiológicos máximos. Un valor alto pero internamente consistente no se interpreta como diagnóstico ni se descarta.
 
 Las vueltas necesitan número único positivo y distancia o duración. Pueden ser parciales: no se exige que cubran toda la actividad. Su suma no puede exceder los totales disponibles, salvo el error acumulado de redondear cada duración a un segundo y cada distancia a 0,01 km (media unidad por dato y por total). No se recalcula ni obliga a igualar el ritmo informado con duración/distancia: distintas fuentes pueden usar tiempo en movimiento.
 
-Los checks SQL protegen valores locales de las filas incluso ante escrituras directas. Las reglas entre tablas (deporte/detalles, presencia de ejercicios/sets, duración del padre y suma de vueltas) se protegen en la API; no hay triggers. Las escrituras fuera de la API deben respetarlas.
+En el provider SQL, sus checks protegen valores locales de las filas incluso ante escrituras directas; Cosmos no ofrece esos checks relacionales y depende de la validación compartida de la API. Las reglas entre tablas (deporte/detalles, presencia de ejercicios/sets, duración del padre y suma de vueltas) se protegen en la API; no hay triggers. Las escrituras fuera de la API deben respetarlas.
 
 Ejemplo de request mínimo de running (los campos opcionales pueden omitirse):
 
@@ -215,22 +225,23 @@ Ejemplo de fuerza:
 
 La importación no deduplica sesiones ni incorpora sincronización. Si hay un corte de conexión después de confirmar, revisa Actividades antes de reintentar: el servidor podría haber guardado la actividad. No pegues nuevamente una actividad ya registrada.
 
-## Progreso de fuerza (iteración local, sin deployment)
+## Progreso de fuerza
 
 En **Progreso** (`/progress`) puedes seleccionar un ejercicio del historial Strength, ver cuatro PRs simples, el mejor peso por sesión y todos sus sets con acceso a la actividad original. Desde el detalle de una actividad Strength, el nombre de cada ejercicio abre directamente `/progress?exercise=...`; también puedes compartir esa URL. Los nombres se agrupan solo con trim y comparación sin distinguir mayúsculas; el peso desconocido permanece desconocido. No requiere migraciones ni modifica registros. [Contrato, semántica de PRs, pruebas y deuda técnica](docs/strength-progress.md).
 
 ## Migraciones, compilación y pruebas
-Desde la raíz:
+Los comandos EF y el smoke SQL de esta sección corresponden al provider local SQL Server. Desde la raíz:
 
 ```powershell
 dotnet build backend
+dotnet run --project tests/CosmosChecks
 dotnet ef migrations has-pending-model-changes --project backend
 npm --prefix frontend run build
 npm --prefix frontend run lint
 node tests/api-smoke.mjs
 ```
 
-Las pruebas requieren Node 24 (ejecución directa de helpers TypeScript), SQL Server 2022 de Compose, PowerShell (`powershell.exe` en Windows o `pwsh` en otros sistemas) y la compilación Debug de la API. Inician una API en **5144** y crean bases temporales `progress_test_<timestamp>` y `progress_test_<timestamp>_demo`; al terminar detienen sus procesos y eliminan únicamente esas bases. No alteran `progress` ni datos personales. Además de la API, el script ejecuta `tests/ReviewChecks`, un pequeño proyecto de pruebas sin librerías nuevas, para comprobar actualización del esquema, checks SQL, seed concurrente y reloj controlado (lunes/domingo, medianoche y horario de verano/invierno de Santiago). Las pruebas HTTP cubren nulls, JSON y precisión, dominio, cascadas y ausencia de valores de payload en logs.
+El smoke SQL requiere Node 24 (ejecución directa de helpers TypeScript), SQL Server 2022 de Compose, PowerShell (`powershell.exe` en Windows o `pwsh` en otros sistemas) y la compilación Debug de la API. Inicia una API en **5144** y crea bases temporales `progress_test_<timestamp>` y `progress_test_<timestamp>_demo`; al terminar detiene sus procesos y elimina únicamente esas bases. No alteran `progress` ni datos personales. Además de la API, el script ejecuta `tests/ReviewChecks`, un pequeño proyecto de pruebas sin librerías nuevas, para comprobar actualización del esquema, checks SQL, seed concurrente y reloj controlado (lunes/domingo, medianoche y horario de verano/invierno de Santiago). Las pruebas HTTP cubren nulls, JSON y precisión, dominio, cascadas y ausencia de valores de payload en logs.
 
 `tests/import-checks.mjs` añade Running/Strength, sintaxis y dominio inválidos, formato y edición subjetiva sin pérdida de precisión, importación efectiva, lectura, listado, series del dashboard y eliminación. `tests/database-setup-checks.mjs` ejecuta el procedimiento real de PowerShell sobre otra base temporal: verifica creación vacía, rechazo sin opt-in y conservación del historial al archivar; elimina solo su base temporal y su archivo al terminar. La prueba asistida de UI (pegar → preview → confirmar → detalle → listado/dashboard, errores y móvil) está documentada en [tests/import-ui.md](tests/import-ui.md). No se agregó una dependencia E2E; esa comprobación de navegador no forma parte del comando automático.
 
@@ -238,7 +249,15 @@ La iteración Other/períodos añade `dashboard-checks.mjs` al smoke y pruebas d
 
 Si generas una migración nueva, vuelve a ejecutar `dotnet build backend` antes del smoke test: este inicia el DLL compilado. La migración de integridad rechaza datos anteriores que violen sus checks; no los borra ni corrige silenciosamente. Revísalos antes de aplicar el cambio sobre otra instalación.
 
-Para una migración futura:
+### Pruebas Cosmos
+
+`dotnet run --project tests/CosmosChecks` comprueba codecs y preservación exacta del texto JSON sin nube. CI ejecuta estas regresiones y el smoke SQL; no ejecuta integración contra una cuenta Cosmos.
+
+`node tests/cosmos-api-smoke.mjs` requiere backend Debug compilado, una base **desechable precreada** `trazo_test_*` y su contenedor con partición `/ownerId`. Configura `COSMOS_TEST_ENDPOINT`, `COSMOS_TEST_DATABASE` y, si difiere de `records`, `COSMOS_TEST_CONTAINER`. Usa Azure CLI autenticada con permisos de datos y acceso de red al destino, o `COSMOS_TEST_KEY` solo si la cuenta de pruebas admite claves. `DOTNET_EXECUTABLE` permite seleccionar el SDK. El script prueba API local en puerto 5145 por defecto y no crea recursos Azure. Al terminar, el operador elimina la base de pruebas completa, incluidos claves, mediciones y fragmentos. Nunca apuntar al contenedor de producción. La ejecución contra Cosmos se verificó el 08-11-2026; no implica una ejecución en cada commit.
+
+### Migraciones SQL
+
+Para una migración futura del esquema SQL:
 
 ```powershell
 dotnet ef migrations add NombreDelCambio --project backend
@@ -269,12 +288,12 @@ conserva el código anterior a la evaluación de Cosmos DB, con bundle Git verif
 y una referencia de configuración Azure sin secretos. No incluye un backup de la base.
 
 La primera respuesta HTML desde ACA en cero y SQL pausado tardó 77,077 segundos
-en la medición del 08-11-2026. Se preparó una prueba separada de Cosmos con datos
-ficticios, sin cambiar el provider ni el deployment de Trazo. Resultados, costos,
+en la medición del 08-11-2026. Durante la evaluación inicial se probó Cosmos por separado con datos
+ficticios. Esa etapa precedió a la migración de producción completada el mismo día. Resultados, costos,
 límites y pasos pendientes en [el informe de viabilidad](docs/cosmos-feasibility-20261108.md);
 instrucciones reproducibles en [experiments/cosmos-spike](experiments/cosmos-spike/README.md).
 
 La migración a Cosmos Free Tier + GHCR retiró ACR y la espera de reanudación de SQL.
 Después se eligió mantener una réplica ACA encendida para evitar el arranque
-habitual de 36 segundos; costo idle estimado de USD 4–6/mes según cuotas, más uso
+observado de 36 segundos en una muestra; costo idle estimado el 08-11-2026 de USD 4–6/mes según cuotas, más uso
 activo. [Estado actual, pruebas, costos y rollback](docs/near-zero-deployment.md).

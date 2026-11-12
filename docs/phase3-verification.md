@@ -1,5 +1,7 @@
 # Fase 3 — verificación del Paso A
 
+> Documento histórico: conserva decisiones, mediciones y resultados de su etapa original. No describe la producción actual ni autoriza repetir el provisioning o deployment. Consulta el [estado vigente](near-zero-deployment.md) y el [índice de documentación](README.md).
+
 Verificación local finalizada el 25-09-2026. No se crearon recursos Azure.
 
 | Verificación | Resultado |

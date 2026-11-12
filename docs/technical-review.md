@@ -1,5 +1,7 @@
 # Revisión técnica del MVP — 22 de septiembre de 2026
 
+> Documento histórico: conserva decisiones, mediciones y resultados de su etapa original. No describe la producción actual ni autoriza repetir el provisioning o deployment. Consulta el [estado vigente](near-zero-deployment.md) y el [índice de documentación](README.md).
+
 Alcance: modelo, API, dashboard, seed, configuración, README y las cinco verificaciones solicitadas. No se agregaron pantallas, autenticación, servicios externos ni infraestructura Azure. La pasada inicial del 21 de septiembre pasó las cinco verificaciones existentes; los problemas de esta revisión no estaban cubiertos por aquellas pruebas.
 
 ## Hallazgos corregidos

@@ -4,6 +4,8 @@ Esta fase no implementa multiusuario ni agrega un `UserId` ficticio. La identida
 `personal` del servicio de autenticación actual es temporal y no forma parte del
 modelo de entrenamientos.
 
+En Cosmos, el almacenamiento actual sí usa `ownerId=personal` como partición de entrenamientos y `system:dataprotection` para claves; esto no implementa autorización multiusuario. Las propuestas relacionales siguientes deberán adaptarse al provider elegido y validar aislamiento por propietario antes de habilitar cuentas.
+
 ## Entidad y ownership
 
 Una futura entidad `User` tendrá un identificador interno estable (por ejemplo

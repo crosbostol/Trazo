@@ -1,5 +1,7 @@
 # Persistencia de Trazo: comparación y recomendación
 
+> Documento histórico: conserva decisiones, mediciones y resultados de su etapa original. No describe la producción actual ni autoriza repetir el provisioning o deployment. Consulta el [estado vigente](near-zero-deployment.md) y el [índice de documentación](README.md).
+
 Fecha: 25-09-2026. Solo análisis; no se migró ni se modificó infraestructura.
 El deployment sigue pausado por el usuario. Estado recuperable en
 [azure-deployment-status.md](azure-deployment-status.md).

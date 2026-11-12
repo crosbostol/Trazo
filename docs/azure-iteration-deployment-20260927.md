@@ -1,5 +1,7 @@
 # Deployment Other/períodos + WalkingDetails · 27-09-2026
 
+> Documento histórico: conserva decisiones, mediciones y resultados de su etapa original. No describe la producción actual ni autoriza repetir el provisioning o deployment. Consulta el [estado vigente](near-zero-deployment.md) y el [índice de documentación](README.md).
+
 Suscripción activa verificada: Visual Studio Professional Subscription
 (`7333ebe0-1f75-4e4d-baf1-424585dbf3fa`). Grupo `rg-trazo-mvp`. Se reutilizaron
 Azure SQL, Container App, ACR, identidad y entorno existentes. No se crearon ni

@@ -1,5 +1,7 @@
 > Actualización: el usuario autorizó autoPauseDelay=60. Provisioning reanudado con Free + AutoPause; los rechazos de 15 minutos se conservan abajo como registro histórico.
 
+> SQL Server sigue vigente para desarrollo local y pruebas. Este informe describe la migración anterior desde PostgreSQL; producción usa Cosmos desde el 08-11-2026. Consulta el [estado vigente](near-zero-deployment.md).
+
 # Migración de persistencia a SQL Server — 26-09-2026
 
 El código nuevo utiliza Microsoft.EntityFrameworkCore.SqlServer 10.0.12 en lugar de Npgsql.EntityFrameworkCore.PostgreSQL 10.0.0. Dominio, DTOs, rutas, dashboard y flujo de importación siguen siendo los mismos. No se migran datos de PostgreSQL.

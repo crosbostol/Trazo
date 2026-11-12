@@ -1,5 +1,7 @@
 > **Corrección verificada al crear (26-09-2026):** las capacidades generales anuncian mínimo 15 minutos, pero Azure rechaza esa demora con Free + AutoPause. Solo permite el default de 60 minutos. La comprobación de capacidades de este documento no verificaba esa combinación específica. Logical server creado; DB no creada. Ver [estado actualizado](azure-deployment-status.md).
 
+> Documento histórico: conserva decisiones, mediciones y resultados de su etapa original. No describe la producción actual ni autoriza repetir el provisioning o deployment. Consulta el [estado vigente](near-zero-deployment.md) y el [índice de documentación](README.md).
+
 # Azure SQL Free: comprobación operativa del 26-09-2026
 
 Único cambio autorizado y realizado en Azure: registrar `Microsoft.Sql`.
