@@ -44,6 +44,7 @@ Para detener solo SQL nuevo: `docker compose stop sqlserver`. Para tests sobre e
 
 ## Funcionalidades
 
+- Diseño Ritmo: paleta oscura, curvas de pista y anillos de respiración decorativos; respeta la preferencia de movimiento reducido. El botón de copia queda alineado a la derecha en escritorio y ocupa el ancho disponible en móvil.
 - Dashboard oscuro y responsive: selector Semana/Mes/Personalizado, sesiones y métricas de running del período, series diarias/semanales y última actividad global.
 - Actividades: listado cronológico, filtro por deporte, registro manual y detalle; eliminación con confirmación en pantalla.
 - Importar: `/import`, JSON pegado, comprobación local, formato sin pérdida de precisión, vista previa, sensaciones editables y confirmación antes de guardar.

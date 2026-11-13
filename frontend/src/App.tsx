@@ -19,12 +19,19 @@ const ProgressPage = lazy(() => import("./pages/ProgressPage"));
 import DatabaseBadge from "./DatabaseBadge";
 import { AuthProvider, AuthGate, LogoutButton } from "./Auth";
 import "./App.css";
-export default function App() {
+import { RhythmBackdrop } from "./RhythmBackdrop";
+import "./rhythm.css";
+export default function App({
+  showBackdrop = true,
+}: {
+  showBackdrop?: boolean;
+}) {
   return (
     <BrowserRouter>
       <AuthProvider>
         <AuthGate>
-          <div className="app-shell">
+          <div className="app-shell rhythm-theme">
+            {showBackdrop && <RhythmBackdrop />}
             <aside className="sidebar">
               <Link className="brand" to="/">
                 <span>

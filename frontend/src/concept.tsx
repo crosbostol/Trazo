@@ -96,7 +96,7 @@ createRoot(document.getElementById("root")!).render(
         </svg>
       </div>
     )}
-    <App />
+    <App showBackdrop={false} />
     <nav
       className="concept-label concept-switch"
       aria-label="Comparar propuestas"
