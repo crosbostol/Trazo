@@ -1,0 +1,40 @@
+{
+  "verifiedLocalDate": "2026-11-12",
+  "applicationProvider": "Cosmos",
+  "design": "Rhythm",
+  "image": "ghcr.io/crosbostol/trazo@sha256:7380021cc19e354409ed86bfdfee7d4dbca83907a1aed9ae53339f6d408e18c2",
+  "applicationImageCommit": "5ec65c21a609afecef6f6f388bdd07bc6ed94467",
+  "previousImage": "ghcr.io/crosbostol/trazo@sha256:44da9772ab06f9f6b102d9129a10adecc6697b82c940ddf4494c50ef9d7cee2a",
+  "revision": "trazo-mvp--0000001",
+  "health": "Healthy",
+  "trafficPercent": 100,
+  "replicas": 1,
+  "scale": {
+    "min": 1,
+    "max": 1,
+    "cpu": 0.25,
+    "memoryGiB": 0.5
+  },
+  "pipeline": "https://github.com/crosbostol/Trazo/actions/runs/43334921843",
+  "pipelineConclusion": "success",
+  "publicChecks": {
+    "html": 200,
+    "readiness": 200,
+    "anonymousSession": 200,
+    "anonymousDashboard": 401,
+    "rhythmAssets": true,
+    "conceptSessionMockIncluded": false
+  },
+  "localProductionBuildChecks": {
+    "screenCount": 7,
+    "viewportWidths": [
+      1440,
+      390,
+      320
+    ],
+    "clipboard": true,
+    "reducedMotion": true,
+    "anonymousLogin": true,
+    "simulatedDataOnlyInBrowserTest": true
+  }
+}

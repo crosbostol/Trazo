@@ -10,9 +10,19 @@ URL: https://trazo-mvp.agreeableisland-910dddf7.centralus.azurecontainerapps.io
 
 Actualizado con el despliegue del 12-11-2026. Las mediciones de latencia y estimaciones de costos conservan su fecha original del 08-11-2026. Para navegar por guías actuales e informes históricos, usa el [índice](README.md).
 
-El [release v0.2.0](https://github.com/crosbostol/Trazo/releases/tag/v0.2.0) apunta a `9e343e0a36f2ba63f786cb16ae349495c47d640d`. Su workflow [verificado](https://github.com/crosbostol/Trazo/actions/runs/42548981288) publicó la imagen `ghcr.io/crosbostol/trazo@sha256:aac214edf8a2abd0187a358b85f87927c41e069cfe0c4b69d66156cbc7611e45`. La imagen de v0.2.0 no se desplegó; la imagen anterior de producción se compiló desde `53a3c2a`. Los cambios posteriores incluyen herramientas de preservación exacta de payload, pruebas y documentación.
+El [release v0.2.0](https://github.com/crosbostol/Trazo/releases/tag/v0.2.0) apunta a `9e343e0a36f2ba63f786cb16ae349495c47d640d`. Su workflow [verificado](https://github.com/crosbostol/Trazo/actions/runs/42548981288) publicó la imagen `ghcr.io/crosbostol/trazo@sha256:aac214edf8a2abd0187a358b85f87927c41e069cfe0c4b69d66156cbc7611e45`. La imagen de v0.2.0 no se desplegó; la primera imagen Cosmos de producción se compiló desde `53a3c2a`. Los cambios posteriores incluyen herramientas de preservación exacta de payload, pruebas y documentación.
 
-## Despliegue del 12-11-2026
+## Despliegue Ritmo del 12-11-2026 (actual)
+
+Se desplegó el commit `5ec65c21a609afecef6f6f388bdd07bc6ed94467`: diseño Ritmo con paleta oscura, curvas de pista, anillos de respiración decorativos y padding responsive del botón de copia. El [pipeline](https://github.com/crosbostol/Trazo/actions/runs/43334921843) completó build, codecs Cosmos, lint y smoke SQL. La etiqueta de revisión OCI de la imagen se contrastó con el commit antes de desplegar por digest.
+
+La revisión `trazo-mvp--0000001` quedó Healthy con una réplica y 100 % del tráfico. Se conservaron identidad, provider Cosmos, secretos, base, recursos y escala mínimo/máximo 1. HTML, readiness y sesión anónima devolvieron 200; el dashboard sin sesión devolvió 401. Se verificó que los assets públicos incluyen el diseño Ritmo y el botón, sin simulación de sesión ni datos del concepto.
+
+Antes del despliegue se comprobó el build de producción en siete pantallas y tres tamaños (1440/390/320), sin overflow ni errores JavaScript, con copia exacta al portapapeles, movimiento reducido y login sin sesión. Datos de prueba interceptados únicamente por el navegador local; no se crearon registros en producción. Los estudios comparativos continúan como entradas locales separadas y no se incluyen en el build normal. [Diseño y comprobaciones](ink-concept.md).
+
+Para revertir únicamente esta actualización visual manteniendo Cosmos, la imagen anterior es `ghcr.io/crosbostol/trazo@sha256:44da9772ab06f9f6b102d9129a10adecc6697b82c940ddf4494c50ef9d7cee2a`; usar el helper de actualización por digest descrito abajo. Evidencia resumida en `infrastructure/near-zero/deployed-2026-11-12.json`.
+
+## Despliegue de copia JSON del 12-11-2026 (anterior)
 
 Se desplegó el commit `e5e7e445bf25915a186df7e3ffbd93a5eed9f979`, que añade **Copiar JSON para importar** al detalle de actividad. El [pipeline](https://github.com/crosbostol/Trazo/actions/runs/43331652321) terminó correctamente, incluyendo build, codecs Cosmos, lint y smoke SQL con exportación/reimportación sin pérdida de precisión.
 
@@ -23,7 +33,7 @@ Imagen anterior conservada para revertir esta actualización manteniendo Cosmos:
 ## Configuración
 
 - ACA `trazo-mvp`, Central US, Consumption, 0,25 CPU/0,5 GiB, mínimo 1 y máximo 1 réplica.
-- Revisión actual `trazo-mvp--bw49zfv`. Readiness cada 2 segundos,
+- Revisión actual `trazo-mvp--0000001`. Readiness cada 2 segundos,
   inicio inmediato y una confirmación; liveness conserva su configuración previa.
 - Provider `Database__Provider=Cosmos`; modo de solo lectura desactivado después
   de la migración. Inicialización y seed siguen desactivados en Production.
@@ -36,8 +46,8 @@ Imagen anterior conservada para revertir esta actualización manteniendo Cosmos:
 - Backup `Continuous7Days`; almacenar el backup no tiene cargo, restaurar sí puede
   tenerlo. La restauración PITR de Azure no se invocó en esta migración.
 - Imagen pública e inmutable:
-  `ghcr.io/crosbostol/trazo@sha256:44da9772ab06f9f6b102d9129a10adecc6697b82c940ddf4494c50ef9d7cee2a`.
-  Código de aplicación compilado del commit `e5e7e445bf25915a186df7e3ffbd93a5eed9f979`.
+  `ghcr.io/crosbostol/trazo@sha256:7380021cc19e354409ed86bfdfee7d4dbca83907a1aed9ae53339f6d408e18c2`.
+  Código de aplicación compilado del commit `5ec65c21a609afecef6f6f388bdd07bc6ed94467`.
 - La imagen **original**, copiada sin recompilar y con el mismo digest anterior:
   `ghcr.io/crosbostol/trazo@sha256:fe03fbef4faa414655af0f81a2731115fcf17224684282d03eef8c9be5caaab4`.
   El tag de consulta es `original-20260927212107`.

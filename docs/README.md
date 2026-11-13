@@ -1,6 +1,6 @@
 # Documentación de Trazo
 
-Revisión documental: 12-11-2026. La guía de producción registra el despliegue del botón de copia del 12-11-2026; las mediciones de latencia y costos conservan la fecha del 08-11-2026.
+Revisión documental: 12-11-2026. La guía de producción registra los despliegues del botón de copia y del diseño Ritmo del 12-11-2026; las mediciones de latencia y costos conservan la fecha del 08-11-2026.
 
 ## Guías vigentes
 
@@ -8,6 +8,7 @@ Revisión documental: 12-11-2026. La guía de producción registra el despliegue
 | --- | --- |
 | [README principal](../README.md) | Inicio local con SQL Server, funcionalidades, API, importación y pruebas por provider |
 | [Producción y operaciones](near-zero-deployment.md) | Cosmos Free Tier, GHCR, ACA con una réplica encendida, costos estimados, límites y rollback |
+| [Diseño Ritmo y estudios locales](ink-concept.md) | Propuestas visuales, integración y comprobaciones de interfaz |
 | [Frontend](../frontend/README.md) | Desarrollo React, proxy, compilación y autenticación |
 | [Progreso de fuerza](strength-progress.md) | Contratos, agrupación y PRs; implementaciones SQL y Cosmos |
 | [Caminatas](walking-details.md) | Reglas del bloque walking e historia del modelo SQL |
@@ -21,7 +22,7 @@ El JSON de importación conserva el contrato de `POST /api/activities`. Cambiar 
 
 [v0.1.0](https://github.com/crosbostol/Trazo/releases/tag/v0.1.0) conserva el checkpoint anterior a Cosmos. [v0.2.0](https://github.com/crosbostol/Trazo/releases/tag/v0.2.0) apunta al commit `9e343e0a36f2ba63f786cb16ae349495c47d640d` e incluye bundle Git, manifiesto y checksums. Estos bundles son respaldo de código, no de los datos personales.
 
-La imagen actual se compiló desde `e5e7e445bf25915a186df7e3ffbd93a5eed9f979` y se desplegó el 12-11-2026. La imagen del release v0.2.0 no se desplegó automáticamente. La [guía de producción](near-zero-deployment.md) registra los digests actual y anterior, revisión, pruebas y condiciones de rollback. Los commits posteriores al tag no cambian el release existente.
+La imagen actual se compiló desde `5ec65c21a609afecef6f6f388bdd07bc6ed94467` y se desplegó el 12-11-2026. La imagen del release v0.2.0 no se desplegó automáticamente. La [guía de producción](near-zero-deployment.md) registra los digests actual y anterior, revisión, pruebas y condiciones de rollback. Los commits posteriores al tag no cambian el release existente.
 
 ## Informes históricos
 

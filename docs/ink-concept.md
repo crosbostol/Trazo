@@ -21,3 +21,6 @@ Verificado en Edge headless a 1440, 390 y 320 px: sin overflow horizontal ni err
 Aprobado Ritmo para producción el 12-11-2026. `RhythmBackdrop.tsx` y `rhythm.css` contienen el fondo y el estilo de la aplicación; `index.css` define la paleta oscura. No importan la entrada `concept.tsx` ni su simulación de datos/sesión. El fondo se monta dentro del área autenticada, es decorativo, no recibe eventos y respeta movimiento reducido. El texto ambiental se limita al detalle para no ocupar el espacio de acciones de otras pantallas.
 
 Verificación del build de producción antes del despliegue: siete pantallas (detalle, resumen, listado, importar, nuevo registro, cuerpo y progreso) a 1440/390/320 px sin overflow horizontal ni errores JavaScript; padding del botón, copia exacta de payload, movimiento reducido y pantalla de login sin sesión. Datos simulados únicamente mediante interceptación del navegador de pruebas. Se comprobó que los bundles no incluyen la simulación local. Estado efectivo y digest en [producción](near-zero-deployment.md).
+
+
+Ritmo se desplegó el 12-11-2026 desde `5ec65c21a609afecef6f6f388bdd07bc6ed94467`, revisión `trazo-mvp--0000001`, con la imagen y verificaciones registradas en la guía de producción.
